@@ -3,6 +3,11 @@
    These rules are shared by every page in the application.
    ============================================================ */
 
+@font-face {
+    font-family: 'Naluka';
+    src: url('Naluka.ttf') format('truetype');
+}
+
 * {
     box-sizing: border-box;
 }
@@ -54,6 +59,9 @@ button {
 .dashboard-card h1 {
     margin: 0 0 10px;
     font-size: 42px;
+    font-family: 'Naluka', Arial, sans-serif;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
 
 .subtitle {
@@ -64,6 +72,7 @@ button {
 .dashboard-buttons {
     display: grid;
     gap: 16px;
+    grid-template-columns: 1fr;
 }
 
 /* ============================================================
@@ -74,7 +83,8 @@ button {
 .secondary-button,
 .add-button,
 .save-button,
-.small-button {
+.small-button,
+.hint-button {
     border: 0;
     border-radius: 10px;
     padding: 13px 20px;
@@ -114,11 +124,19 @@ button {
     padding: 9px 14px;
 }
 
+.hint-button {
+    background: #f59e0b;
+    color: white;
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
 .primary-button:hover,
 .secondary-button:hover,
 .add-button:hover,
 .save-button:hover,
-.small-button:hover {
+.small-button:hover,
+.hint-button:hover {
     transform: translateY(-1px);
     opacity: 0.9;
 }
@@ -133,6 +151,9 @@ button {
     align-items: center;
     gap: 20px;
     margin-bottom: 35px;
+    width: min(900px, 100%);
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .title-input {
@@ -148,7 +169,8 @@ button {
 
 .title-input:focus,
 .question-input:focus,
-.answer-input:focus {
+.answer-input:focus,
+.hint-input:focus {
     border-color: #2563eb;
 }
 
@@ -191,7 +213,8 @@ button {
 }
 
 .question-input,
-.answer-input {
+.answer-input,
+.hint-input {
     width: 100%;
     padding: 14px;
     border: 2px solid #d1d5db;
@@ -201,6 +224,12 @@ button {
 
 .question-input {
     min-height: 100px;
+    resize: vertical;
+    margin-bottom: 15px;
+}
+
+.hint-input {
+    min-height: 80px;
     resize: vertical;
     margin-bottom: 15px;
 }
@@ -242,6 +271,92 @@ button {
 }
 
 /* ============================================================
+   FOLDER/CATEGORY STYLES
+   ============================================================ */
+
+.category-input {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid #d1d5db;
+    border-radius: 10px;
+    outline: none;
+    margin-bottom: 15px;
+}
+
+.category-input:focus {
+    border-color: #2563eb;
+}
+
+.category-container {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f9fafb;
+    border-radius: 10px;
+    display: grid;
+    gap: 8px;
+}
+
+.category-folder {
+    padding: 16px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.category-folder-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.category-folder-title {
+    font-weight: 600;
+    font-size: 16px;
+    flex: 1;
+    margin: 0;
+}
+
+.category-toggle-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.category-toggle-btn:hover {
+    background: #2563eb;
+}
+
+.category-quizzes {
+    display: none;
+    margin-top: 12px;
+    padding-left: 16px;
+    border-left: 3px solid #d1d5db;
+}
+
+.category-quizzes.expanded {
+    display: grid;
+    gap: 8px;
+}
+
+.category-quiz-item {
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ============================================================
    TOAST MESSAGE
    ============================================================ */
 
@@ -271,6 +386,7 @@ button {
 .simple-header {
     text-align: center;
     margin-bottom: 40px;
+    width: 100%;
 }
 
 .simple-header h1 {
@@ -314,6 +430,60 @@ button {
 }
 
 /* ============================================================
+   HINT STYLES
+   ============================================================ */
+
+.hint-container {
+    position: relative;
+    margin-top: 20px;
+}
+
+.hint-button-wrapper {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.hint-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff9e6;
+    border: 3px dashed #f59e0b;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    max-width: 400px;
+    width: 90%;
+}
+
+.hint-box-content {
+    font-size: 16px;
+    font-weight: 600;
+    color: #92400e;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.hint-box-text {
+    font-size: 14px;
+    color: #78350f;
+    line-height: 1.5;
+}
+
+.hint-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 99;
+}
+
+/* ============================================================
    TAKE QUIZ PAGE
    ============================================================ */
 
@@ -322,6 +492,7 @@ button {
     margin: 0 auto 30px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 25px;
 }
 
@@ -334,6 +505,15 @@ button {
     color: #6b7280;
 }
 
+.quiz-score-badge {
+    background: #2563eb;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 18px;
+}
+
 .quiz-area {
     width: min(900px, 100%);
     margin: 0 auto;
@@ -344,6 +524,7 @@ button {
     background: white;
     border-radius: 18px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+    position: relative;
 }
 
 .quiz-question {
@@ -363,10 +544,16 @@ button {
     padding: 15px;
     border: 2px solid #d1d5db;
     border-radius: 10px;
+    cursor: pointer;
 }
 
 .quiz-option:hover {
     border-color: #2563eb;
+    background-color: #f0f4ff;
+}
+
+.quiz-option input[type="radio"] {
+    cursor: pointer;
 }
 
 .fill-answer {
@@ -391,10 +578,74 @@ button {
     background: white;
     border-radius: 18px;
     text-align: center;
+    position: relative;
 }
 
 .result-area h2 {
     margin-top: 0;
+}
+
+.result-score-top {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    background: #2563eb;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.quiz-review-container {
+    margin-top: 30px;
+    max-height: 600px;
+    overflow-y: auto;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    background: #f9fafb;
+}
+
+.quiz-review-question {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    border-left: 4px solid #d1d5db;
+}
+
+.quiz-review-question.correct {
+    border-left-color: #16a34a;
+}
+
+.quiz-review-question.incorrect {
+    border-left-color: #dc2626;
+}
+
+.quiz-review-question-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.quiz-review-answer-item {
+    margin: 8px 0;
+    padding: 8px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.quiz-review-answer-item.correct {
+    background: #dcfce7;
+    color: #166534;
+    font-weight: 600;
+}
+
+.quiz-review-answer-item.incorrect {
+    background: #fee2e2;
+    color: #991b1b;
 }
 
 .hidden {
@@ -416,6 +667,10 @@ button {
 
     .dashboard-card h1 {
         font-size: 32px;
+    }
+
+    .dashboard-buttons {
+        grid-template-columns: 1fr;
     }
 
     .top-bar {
@@ -443,5 +698,14 @@ button {
 
     .quiz-card-actions button {
         flex: 1;
+    }
+
+    .result-score-top {
+        position: static;
+        margin-bottom: 20px;
+    }
+
+    .hint-box {
+        max-width: 90%;
     }
 }

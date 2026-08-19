@@ -1,100 +1,166 @@
 /* ============================================
    MAIN APPLICATION FILE
-   Purpose: Initialize app and connect all event listeners
-   This file runs when page loads and sets up the app
    ============================================ */
 
-/* ============================================
-   INITIALIZE APPLICATION
-   Purpose: Set up event listeners and prepare app
-   Runs when page finishes loading
-   ============================================ */
-function initializeApp() {
-    // ========== DASHBOARD BUTTONS ==========
+document.addEventListener('DOMContentLoaded', function() {
+    // Start Quiz Button
+    const startQuizBtn = document.getElementById('startQuizBtn');
+    if (startQuizBtn) {
+        startQuizBtn.addEventListener('click', function() {
+            loadQuizzes();
+            showSection('startQuizSection');
+        });
+    }
     
-    // Listen for Create Quiz button click
-    document.getElementById('createQuizBtn').addEventListener('click', () => {
-        // Show create quiz section
-        showSection('createQuizSection');
-        
-        // Reset form
-        setFormValue('quizTitle', '');
-        currentQuestions = [];
-        clearElement('questionsContainer');
-        
-        // Add first empty question
-        addQuestion();
-    });
+    // Create Quiz Button
+    const createQuizBtn = document.getElementById('createQuizBtn');
+    if (createQuizBtn) {
+        createQuizBtn.addEventListener('click', function() {
+            initCreateQuiz();
+            showSection('createQuizSection');
+        });
+    }
     
-    // Listen for Start Quiz button click
-    document.getElementById('startQuizBtn').addEventListener('click', () => {
-        // Show start quiz section
-        showSection('startQuizSection');
-        
-        // Load all saved quizzes
-        loadQuizzes();
-    });
+    // Edit Quiz Button
+    const editQuizBtn = document.getElementById('editQuizBtn');
+    if (editQuizBtn) {
+        editQuizBtn.addEventListener('click', function() {
+            loadQuizzesForEditing();
+            showSection('editQuizSection');
+        });
+    }
     
-    // ========== CREATE QUIZ SECTION BUTTONS ==========
+    // Print Quiz Button
+    const printQuizBtn = document.getElementById('printQuizBtn');
+    if (printQuizBtn) {
+        printQuizBtn.addEventListener('click', function() {
+            loadQuizzesForPrinting();
+            showSection('printQuizSection');
+        });
+    }
     
-    // Back button from create quiz
-    document.getElementById('backFromCreateBtn').addEventListener('click', () => {
-        showSection('dashboard');
-    });
+    // Back from Create
+    const backFromCreateBtn = document.getElementById('backFromCreateBtn');
+    if (backFromCreateBtn) {
+        backFromCreateBtn.addEventListener('click', function() {
+            showSection('dashboard');
+        });
+    }
     
-    // Add Question button
-    document.getElementById('addQuestionBtn').addEventListener('click', () => {
-        addQuestion();
-    });
+    // Add Question
+    const addQuestionBtn = document.getElementById('addQuestionBtn');
+    if (addQuestionBtn) {
+        addQuestionBtn.addEventListener('click', function() {
+            addQuestion();
+        });
+    }
     
-    // Save Quiz button
-    document.getElementById('saveQuizBtn').addEventListener('click', () => {
-        saveQuiz();
-    });
+    // Save Quiz
+    const saveQuizBtn = document.getElementById('saveQuizBtn');
+    if (saveQuizBtn) {
+        saveQuizBtn.addEventListener('click', function() {
+            saveQuiz();
+        });
+    }
     
-    // ========== START QUIZ SECTION BUTTONS ==========
+    // Back from Edit
+    const backFromEditBtn = document.getElementById('backFromEditBtn');
+    if (backFromEditBtn) {
+        backFromEditBtn.addEventListener('click', function() {
+            showSection('dashboard');
+        });
+    }
     
-    // Back button from start quiz
-    document.getElementById('backFromStartBtn').addEventListener('click', () => {
-        showSection('dashboard');
-    });
+    // Back from Quiz Editor
+    const backFromQuizEditorBtn = document.getElementById('backFromQuizEditorBtn');
+    if (backFromQuizEditorBtn) {
+        backFromQuizEditorBtn.addEventListener('click', function() {
+            currentEditingQuizId = null;
+            currentEditingQuestions = [];
+            clearElement('editingQuestionsContainer');
+            loadQuizzesForEditing();
+            showSection('editQuizSection');
+        });
+    }
     
-    // ========== QUIZ TAKING SECTION BUTTONS ==========
+    // Add Edit Question
+    const addEditQuestionBtn = document.getElementById('addEditQuestionBtn');
+    if (addEditQuestionBtn) {
+        addEditQuestionBtn.addEventListener('click', function() {
+            addEditQuestion();
+        });
+    }
     
-    // Back button from quiz taking
-    document.getElementById('backFromQuizBtn').addEventListener('click', () => {
-        showSection('startQuizSection');
-        loadQuizzes();
-    });
+    // Save Edit Quiz
+    const saveEditQuizBtn = document.getElementById('saveEditQuizBtn');
+    if (saveEditQuizBtn) {
+        saveEditQuizBtn.addEventListener('click', function() {
+            saveEditedQuiz();
+        });
+    }
     
-    // Previous question button
-    document.getElementById('prevQuestionBtn').addEventListener('click', () => {
-        goToPreviousQuestion();
-    });
+    // Back from Start
+    const backFromStartBtn = document.getElementById('backFromStartBtn');
+    if (backFromStartBtn) {
+        backFromStartBtn.addEventListener('click', function() {
+            showSection('dashboard');
+        });
+    }
     
-    // Next question button
-    document.getElementById('nextQuestionBtn').addEventListener('click', () => {
-        goToNextQuestion();
-    });
+    // Back from Quiz
+    const backFromQuizBtn = document.getElementById('backFromQuizBtn');
+    if (backFromQuizBtn) {
+        backFromQuizBtn.addEventListener('click', function() {
+            currentTakingQuizId = null;
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            loadQuizzes();
+            showSection('startQuizSection');
+        });
+    }
     
-    // Finish quiz button
-    document.getElementById('finishQuizBtn').addEventListener('click', () => {
-        finishQuiz();
-    });
+    // Previous Question
+    const prevQuestionBtn = document.getElementById('prevQuestionBtn');
+    if (prevQuestionBtn) {
+        prevQuestionBtn.addEventListener('click', function() {
+            goToPreviousQuestion();
+        });
+    }
     
-    // ========== RESULTS SECTION BUTTONS ==========
+    // Next Question
+    const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+    if (nextQuestionBtn) {
+        nextQuestionBtn.addEventListener('click', function() {
+            goToNextQuestion();
+        });
+    }
     
-    // Back button from results
-    document.getElementById('backFromResultsBtn').addEventListener('click', () => {
-        showSection('dashboard');
-    });
-}
-
-/* ============================================
-   PAGE LOAD EVENT
-   Purpose: Run initialization when page finishes loading
-   ============================================ */
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize the app
-    initializeApp();
+    // Finish Quiz
+    const finishQuizBtn = document.getElementById('finishQuizBtn');
+    if (finishQuizBtn) {
+        finishQuizBtn.addEventListener('click', function() {
+            finishQuiz();
+        });
+    }
+    
+    // Back from Print
+    const backFromPrintBtn = document.getElementById('backFromPrintBtn');
+    if (backFromPrintBtn) {
+        backFromPrintBtn.addEventListener('click', function() {
+            showSection('dashboard');
+        });
+    }
+    
+    // Back from Results
+    const backFromResultsBtn = document.getElementById('backFromResultsBtn');
+    if (backFromResultsBtn) {
+        backFromResultsBtn.addEventListener('click', function() {
+            currentTakingQuizId = null;
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            showSection('dashboard');
+        });
+    }
+    
+    showSection('dashboard');
 });

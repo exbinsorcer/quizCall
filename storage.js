@@ -1,80 +1,106 @@
 /* ============================================
-   STORAGE UTILITY
+   STORAGE MODULE
    Purpose: Handle all localStorage operations
-   - Saving quizzes
-   - Loading quizzes
-   - Deleting quizzes
+   - Save and retrieve quizzes
+   - Data persistence
+   - Text file generation for printing
    ============================================ */
 
-// Define the key used for storing quizzes in localStorage
-const QUIZZES_STORAGE_KEY = 'quizzes_data';
-
-/* ============================================
-   GET ALL QUIZZES
-   Purpose: Retrieve all saved quizzes from localStorage
-   Returns: Array of quiz objects
-   ============================================ */
 function getAllQuizzes() {
-    // Get the data from localStorage using the storage key
-    const data = localStorage.getItem(QUIZZES_STORAGE_KEY);
-    
-    // If no data exists, return empty array
-    // Otherwise, parse the JSON string back to JavaScript objects
+    const data = localStorage.getItem('quizzes_data');
     return data ? JSON.parse(data) : [];
 }
 
-/* ============================================
-   SAVE QUIZ
-   Purpose: Save a new quiz to localStorage
-   Parameter: quiz - Quiz object to save
-   ============================================ */
 function saveQuiz(quiz) {
-    // Get all existing quizzes
-    const quizzes = getAllQuizzes();
-    
-    // Add the new quiz to the array
-    quizzes.push(quiz);
-    
-    // Save the updated array back to localStorage
-    // JSON.stringify converts the JavaScript object to a JSON string
-    localStorage.setItem(QUIZZES_STORAGE_KEY, JSON.stringify(quizzes));
+    const allQuizzes = getAllQuizzes();
+    allQuizzes.push(quiz);
+    localStorage.setItem('quizzes_data', JSON.stringify(allQuizzes));
 }
 
-/* ============================================
-   GET QUIZ BY ID
-   Purpose: Retrieve a specific quiz by its ID
-   Parameter: quizId - The ID of the quiz to retrieve
-   Returns: Quiz object or null if not found
-   ============================================ */
 function getQuizById(quizId) {
-    // Get all quizzes
     const quizzes = getAllQuizzes();
-    
-    // Use find() to locate quiz with matching ID
     return quizzes.find(quiz => quiz.id === quizId) || null;
 }
 
-/* ============================================
-   DELETE QUIZ
-   Purpose: Remove a quiz from localStorage
-   Parameter: quizId - The ID of the quiz to delete
-   ============================================ */
 function deleteQuiz(quizId) {
-    // Get all existing quizzes
-    const quizzes = getAllQuizzes();
-    
-    // Use filter() to create new array without the quiz to delete
-    const updatedQuizzes = quizzes.filter(quiz => quiz.id !== quizId);
-    
-    // Save the updated array back to localStorage
-    localStorage.setItem(QUIZZES_STORAGE_KEY, JSON.stringify(updatedQuizzes));
+    const allQuizzes = getAllQuizzes();
+    const filtered = allQuizzes.filter(quiz => quiz.id !== quizId);
+    localStorage.setItem('quizzes_data', JSON.stringify(filtered));
 }
 
-/* ============================================
-   CLEAR ALL QUIZZES
-   Purpose: Remove all quizzes from localStorage (useful for testing)
-   ============================================ */
-function clearAllQuizzes() {
-    // Remove the storage key completely from localStorage
-    localStorage.removeItem(QUIZZES_STORAGE_KEY);
+function getQuizzesByFolder(folderName) {
+    const quizzes = getAllQuizzes();
+    return quizzes.filter(quiz => quiz.folder === folderName || !quiz.folder);
+}
+
+function getAllFolders() {
+    const quizzes = getAllQuizzes();
+    const folders = new Set();
+    quizzes.forEach(quiz => {
+        if (quiz.folder) {
+            folders.add(quiz.folder);
+        }
+    });
+    return Array.from(folders).sort();
+}
+
+function getQuizzesWithoutFolder() {
+    const quizzes = getAllQuizzes();
+    return quizzes.filter(quiz => !quiz.folder);
+}
+
+function generateQuizTextFile(quiz) {
+    let textContent = '';
+    
+    textContent += `${'='.repeat(80)}\n`;
+    textContent += `${quiz.title.toUpperCase()}\n`;
+    textContent += `${'='.repeat(80)}\n\n`;
+    
+    textContent += `Total Questions: ${quiz.questions.length}\n`;
+    textContent += `Date Created: ${quiz.createdDate}\n`;
+    textContent += `${'='.repeat(80)}\n\n`;
+    
+    quiz.questions.forEach((question, index) => {
+        textContent += `Question ${index + 1}: ${question.question}\n`;
+        
+        if (question.answerType === 'multiple-choice') {
+            question.answers.forEach((answer, answerIndex) => {
+                textContent += `  ${String.fromCharCode(97 + answerIndex)}) ${answer.text}\n`;
+            });
+        } else {
+            textContent += `  Answer: ____________________________________________________\n`;
+        }
+        
+        textContent += '\n';
+    });
+    
+    textContent += `\n${'='.repeat(80)}\n`;
+    textContent += `ANSWER KEY\n`;
+    textContent += `${'='.repeat(80)}\n\n`;
+    
+    quiz.questions.forEach((question, index) => {
+        if (question.answerType === 'multiple-choice') {
+            const correctIndex = question.answers.findIndex(ans => ans.isCorrect);
+            const correctAnswer = String.fromCharCode(97 + correctIndex).toUpperCase();
+            textContent += `Question ${index + 1}: ${correctAnswer}\n`;
+        } else {
+            const correctAnswer = question.answers[0].text;
+            textContent += `Question ${index + 1}: ${correctAnswer}\n`;
+        }
+    });
+    
+    return textContent;
+}
+
+function downloadQuizTextFile(quiz) {
+    const textContent = generateQuizTextFile(quiz);
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${quiz.title.replace(/\s+/g, '_')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
 }

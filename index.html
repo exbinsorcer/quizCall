@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Page title -->
-    <title>Quiz App</title>
+    <title>QuizCall</title>
     
     <!-- Link to external CSS file for all styling -->
     <link rel="stylesheet" href="style.css">
@@ -15,26 +15,36 @@
     
     <!-- ============================================================
          DASHBOARD PAGE
-         Shows two buttons: Create Your Quiz and Start Your Quiz
+         Shows buttons in order: Start, Create, Edit, Print
          ============================================================ -->
     <div class="page dashboard-page" id="dashboard">
         <div class="dashboard-card">
             <!-- Dashboard title -->
-            <h1>Quiz App</h1>
+            <h1>QuizCall</h1>
             
             <!-- Subtitle text -->
-            <p class="subtitle">Create custom quizzes and test your knowledge</p>
+            <p class="subtitle">Create engaging quizzes, track progress, and master any subject</p>
             
-            <!-- Container for the two main buttons -->
+            <!-- Container for the main buttons -->
             <div class="dashboard-buttons">
+                <!-- Button to navigate to Start/Take Quiz page -->
+                <button class="primary-button" id="startQuizBtn">
+                    🚀 Start
+                </button>
+
                 <!-- Button to navigate to Create Quiz page -->
                 <button class="primary-button" id="createQuizBtn">
-                    Create Your Quiz
+                    ✏️ Create
                 </button>
                 
-                <!-- Button to navigate to Start/Take Quiz page -->
-                <button class="secondary-button" id="startQuizBtn">
-                    Start Your Quiz
+                <!-- Button to navigate to Edit Quiz page -->
+                <button class="primary-button" id="editQuizBtn">
+                    📝 Edit
+                </button>
+
+                <!-- Button to navigate to Print Quiz page -->
+                <button class="primary-button" id="printQuizBtn">
+                    🖨️ Print
                 </button>
             </div>
         </div>
@@ -67,6 +77,19 @@
             <!-- Right spacer -->
             <div class="top-bar-spacer"></div>
         </div>
+
+        <!-- Folder input -->
+        <div class="creator-container" style="margin-bottom: 20px;">
+            <label for="quizFolder" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                📁 Quiz Folder/Category (Optional)
+            </label>
+            <input 
+                type="text" 
+                id="quizFolder" 
+                class="category-input" 
+                placeholder="e.g., Electrical, Physics, Math (Leave blank for no folder)"
+            >
+        </div>
         
         <!-- Main container for quiz creation -->
         <div class="creator-container">
@@ -86,10 +109,93 @@
             SAVE
         </button>
     </div>
+
+    <!-- ============================================================
+         EDIT QUIZ PAGE
+         Page for editing existing quizzes
+         ============================================================ -->
+    <div class="page" id="editQuizSection" style="display: none;">
+        
+        <!-- Back button to return to dashboard -->
+        <button class="secondary-button" id="backFromEditBtn" style="margin-bottom: 20px;">
+            ← Back to Dashboard
+        </button>
+        
+        <!-- Header with title -->
+        <div class="simple-header">
+            <h1>Edit or Delete Your Quiz</h1>
+            <p>Select a quiz to edit or delete</p>
+        </div>
+        
+        <!-- Container for quiz list - Will be populated dynamically -->
+        <div class="quiz-library" id="editQuizzesList">
+            <!-- Quizzes will be added here dynamically -->
+        </div>
+    </div>
+
+    <!-- ============================================================
+         QUIZ EDITOR PAGE
+         Page for editing a specific quiz
+         ============================================================ -->
+    <div class="page" id="quizEditorSection" style="display: none;">
+        
+        <!-- Back button to return to edit quiz list -->
+        <button class="secondary-button" id="backFromQuizEditorBtn" style="margin-bottom: 20px;">
+            ← Back to Edit Selection
+        </button>
+        
+        <!-- Top bar with title input centered -->
+        <div class="top-bar">
+            <!-- Left spacer -->
+            <div class="top-bar-spacer"></div>
+            
+            <!-- Title input field - Centered -->
+            <input 
+                type="text" 
+                id="editingQuizTitle" 
+                class="title-input" 
+                placeholder="Quiz Title"
+            >
+            
+            <!-- Right spacer -->
+            <div class="top-bar-spacer"></div>
+        </div>
+
+        <!-- Folder input for editing -->
+        <div class="creator-container" style="margin-bottom: 20px;">
+            <label for="editingQuizFolder" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                📁 Quiz Folder/Category (Optional)
+            </label>
+            <input 
+                type="text" 
+                id="editingQuizFolder" 
+                class="category-input" 
+                placeholder="e.g., Electrical, Physics, Math (Leave blank for no folder)"
+            >
+        </div>
+        
+        <!-- Main container for quiz editing -->
+        <div class="creator-container">
+            <!-- Container for all questions - Will be populated dynamically -->
+            <div id="editingQuestionsContainer">
+                <!-- Questions will be added here dynamically -->
+            </div>
+            
+            <!-- Button to add a new question-answer pair -->
+            <button class="add-button" id="addEditQuestionBtn">
+                + Add Question
+            </button>
+        </div>
+        
+        <!-- Save button - Located in bottom right (fixed position in CSS) -->
+        <button class="save-button" id="saveEditQuizBtn">
+            SAVE CHANGES
+        </button>
+    </div>
     
     <!-- ============================================================
          START QUIZ PAGE
-         Page displaying all saved quizzes
+         Page displaying all saved quizzes organized by folders
          ============================================================ -->
     <div class="page" id="startQuizSection" style="display: none;">
         
@@ -106,6 +212,29 @@
         
         <!-- Container for quiz list - Will be populated dynamically -->
         <div class="quiz-library" id="quizzesList">
+            <!-- Quizzes will be added here dynamically -->
+        </div>
+    </div>
+
+    <!-- ============================================================
+         PRINT QUIZ PAGE
+         Page for selecting and printing quizzes
+         ============================================================ -->
+    <div class="page" id="printQuizSection" style="display: none;">
+        
+        <!-- Back button to return to dashboard -->
+        <button class="secondary-button" id="backFromPrintBtn" style="margin-bottom: 20px;">
+            ← Back to Dashboard
+        </button>
+        
+        <!-- Header with title -->
+        <div class="simple-header">
+            <h1>Download Quizzes</h1>
+            <p>Select a quiz to download as text file</p>
+        </div>
+        
+        <!-- Container for quiz list - Will be populated dynamically -->
+        <div class="quiz-library" id="printQuizzesList">
             <!-- Quizzes will be added here dynamically -->
         </div>
     </div>
@@ -149,7 +278,7 @@
     
     <!-- ============================================================
          QUIZ RESULTS PAGE
-         Page displaying quiz results and score
+         Page displaying quiz results and score with review
          ============================================================ -->
     <div class="page" id="quizResultsSection" style="display: none;">
         
@@ -185,9 +314,15 @@
     
     <!-- Create Quiz functionality -->
     <script src="createQuiz.js"></script>
+
+    <!-- Edit Quiz functionality -->
+    <script src="editQuiz.js"></script>
     
     <!-- Start Quiz and Quiz Taking functionality -->
     <script src="startQuiz.js"></script>
+
+    <!-- Print Quiz functionality -->
+    <script src="printQuiz.js"></script>
     
     <!-- Main application logic and event listeners -->
     <script src="app.js"></script>
