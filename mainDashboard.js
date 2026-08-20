@@ -58,8 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const studyBtn = document.getElementById('studyBtn');
     if (studyBtn) {
         studyBtn.addEventListener('click', function() {
-            // Navigate to quizCall.html in same directory
-            window.location.href = window.location.pathname.replace('index.html', 'quizCall.html');
+            window.location.href = '/quizCall/quizCall.html';
         });
     }
 
