@@ -11,8 +11,11 @@
     <!-- Link to external CSS file for all styling -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    
+<body id="quizBody" class="light-theme">
+    <script>
+        const savedTheme = localStorage.getItem('app-theme') || 'light-theme';
+        document.body.className = savedTheme;
+    </script>
     <!-- ============================================================
          DASHBOARD PAGE
          Shows buttons in order: Start, Create, Edit, Print
@@ -326,12 +329,5 @@
     
     <!-- Main application logic and event listeners -->
     <script src="app.js"></script>
-
-    <!-- Theme sync from main dashboard -->
-    <script>
-        // Apply saved theme from localStorage
-        const savedTheme = localStorage.getItem('app-theme') || 'light-theme';
-        document.body.className = savedTheme;
-    </script>
 </body>
 </html>

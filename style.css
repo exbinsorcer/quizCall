@@ -16,9 +16,8 @@ body {
     margin: 0;
     min-height: 100vh;
     font-family: Arial, Helvetica, sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-    color: #2d3748;
-    transition: background 0.3s ease, color 0.3s ease;
+    background: #f4f6f8;
+    color: #1f2937;
 }
 
 button,
@@ -804,12 +803,8 @@ body.dark-theme .toast {
 
 .main-dashboard-page {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    padding: 32px;
-    padding-top: 140px;
     position: relative;
 }
 
@@ -876,6 +871,11 @@ body.dark-theme .theme-toggle {
     color: white;
 }
 
+.reminders-btn {
+    background: #8b5cf6;
+    color: white;
+}
+
 body.dark-theme .study-btn {
     background: #3b82f6;
 }
@@ -895,19 +895,12 @@ body.dark-theme .eat-btn {
 
 .eat-dashboard-page {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    padding: 32px;
-    padding-top: 80px;
 }
 
 .eat-dashboard-card {
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .eat-dashboard-card h1 {
@@ -921,7 +914,7 @@ body.dark-theme .eat-btn {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    min-width: 300px;
+    align-items: center;
 }
 
 .eat-btn-item {
@@ -945,7 +938,7 @@ body.dark-theme .eat-btn-item {
 }
 
 .back-to-main-btn {
-    position: fixed;
+    position: absolute;
     top: 20px;
     left: 20px;
     padding: 10px 20px;
@@ -956,7 +949,6 @@ body.dark-theme .eat-btn-item {
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.15s ease, opacity 0.15s ease;
-    z-index: 100;
 }
 
 body.dark-theme .back-to-main-btn {
@@ -970,74 +962,82 @@ body.dark-theme .back-to-main-btn {
 }
 
 /* ============================================================
-   DARK THEME - GRADIENT
+   DARK MODE TOGGLE BUTTON
    ============================================================ */
 
-body.dark-theme {
-    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-    color: #e2e8f0;
+.dark-mode-toggle-btn {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    width: 40px;
+    height: 40px;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+body.dark-theme .dark-mode-toggle-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark-mode-toggle-btn:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* ============================================================
-   DAILY INTAKE PAGE
+   REMINDERS PAGE
    ============================================================ */
 
-.daily-intake-page {
+.reminders-page {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
     padding: 32px;
+    padding-top: 80px;
 }
 
-.intake-card {
+.reminders-card {
     width: 100%;
-    padding: 0;
-    background: transparent;
-    border-radius: 0;
-    box-shadow: none;
-    text-align: center;
     max-width: 500px;
+    text-align: center;
 }
 
-body.dark-theme .intake-card {
-    background: transparent;
-    box-shadow: none;
-}
-
-.intake-card h1 {
-    margin: 0 0 30px;
+.reminders-card h1 {
+    margin: 0 0 10px;
     font-size: 36px;
     font-family: 'Naluka', Arial, sans-serif;
-    font-weight: bold;
 }
 
-.intake-form {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-}
-
-.form-group label {
-    margin: 0;
-    font-weight: 600;
+.reminders-date {
+    margin: 0 0 30px;
     font-size: 16px;
+    font-weight: 600;
+    color: #6b7280;
 }
 
-.intake-input {
-    width: 100%;
-    max-width: 300px;
+body.dark-theme .reminders-date {
+    color: #9ca3af;
+}
+
+.reminders-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.reminder-input {
     padding: 12px 16px;
     border: 2px solid #d1d5db;
     border-radius: 8px;
@@ -1046,22 +1046,76 @@ body.dark-theme .intake-card {
     transition: border-color 0.2s ease;
 }
 
-.intake-input:focus {
-    outline: none;
-    border-color: #8b9dc3;
-    background: #f9fafc;
-}
-
-body.dark-theme .intake-input {
+body.dark-theme .reminder-input {
     background: #374151;
     border-color: #4b5563;
     color: #e2e8f0;
 }
 
-body.dark-theme .intake-input:focus {
-    background: #4b5563;
-    border-color: #6b7880;
+.reminder-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
 }
+
+.reminder-add-btn {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reminder-add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.reminders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.reminder-item {
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+body.dark-theme .reminder-item {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+.reminder-text {
+    margin: 0;
+    font-size: 14px;
+}
+
+.reminder-delete-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 8px;
+    transition: transform 0.2s ease;
+}
+
+.reminder-delete-btn:hover {
+    transform: scale(1.2);
+}
+
+/* ============================================================
+   DAILY INTAKE BUTTONS
+   ============================================================ */
 
 .save-intake-btn {
     padding: 14px 28px;

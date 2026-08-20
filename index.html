@@ -9,7 +9,7 @@
 <body class="light-theme">
     <!-- MAIN DASHBOARD -->
     <div class="page main-dashboard-page" id="mainDashboard">
-        <button class="theme-toggle" id="themeToggleBtn">🌙 Dark</button>
+        <button class="dark-mode-toggle-btn" id="darkModeToggle">🌙</button>
         
         <h1 style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); margin: 0; font-size: 48px; font-family: 'Naluka', Arial, sans-serif; font-weight: bold; letter-spacing: 2px;">DASHBOARD</h1>
         
@@ -17,6 +17,7 @@
             <div class="main-dashboard-buttons">
                 <button class="main-dashboard-btn study-btn" id="studyBtn">📚 Study</button>
                 <button class="main-dashboard-btn eat-btn" id="eatBtn">🍽️ Eat</button>
+                <button class="main-dashboard-btn reminders-btn" id="remindersBtn">⏰ Reminders</button>
             </div>
         </div>
     </div>
@@ -67,6 +68,28 @@
                 
                 <!-- Save Button -->
                 <button class="save-intake-btn" id="saveIntakeBtn">💾 Save Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REMINDERS PAGE -->
+    <div class="page reminders-page" id="remindersPage" style="display: none;">
+        <button class="back-to-main-btn" id="backFromRemindersBtn">← Back</button>
+        
+        <div class="reminders-card">
+            <h1>Reminders</h1>
+            <p class="reminders-date" id="remindersDate"></p>
+            
+            <div class="reminders-form">
+                <div class="form-group">
+                    <label for="reminderInput">Add Reminder</label>
+                    <input type="text" id="reminderInput" class="reminder-input" placeholder="Type reminder...">
+                </div>
+                <button class="reminder-add-btn" id="reminderAddBtn">➕ Add</button>
+            </div>
+            
+            <div class="reminders-list" id="remindersList">
+                <!-- Reminders will appear here -->
             </div>
         </div>
     </div>
