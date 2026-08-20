@@ -58,7 +58,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const studyBtn = document.getElementById('studyBtn');
     if (studyBtn) {
         studyBtn.addEventListener('click', function() {
-            window.location.href = '/quizCall/quizCall.html';
+            // Check if running on GitHub Pages or locally
+            if (window.location.href.includes('github.io')) {
+                // GitHub Pages - use absolute path
+                window.location.href = '/quizCall/quizCall.html';
+            } else {
+                // Local file - use relative path
+                window.location.href = './quizCall.html';
+            }
         });
     }
 
@@ -82,7 +89,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const dailyIntakeBtn = document.getElementById('dailyIntakeBtn');
     if (dailyIntakeBtn) {
         dailyIntakeBtn.addEventListener('click', function() {
-            showNotification('📊 Daily Intake feature coming soon!');
+            initDailyIntake();
+            showSection('dailyIntakePage');
+        });
+    }
+
+    // Back from Daily Intake
+    const backFromDailyIntakeBtn = document.getElementById('backFromDailyIntakeBtn');
+    if (backFromDailyIntakeBtn) {
+        backFromDailyIntakeBtn.addEventListener('click', function() {
+            showSection('eatDashboard');
+        });
+    }
+
+    // Save Intake Entry
+    const saveIntakeBtn = document.getElementById('saveIntakeBtn');
+    if (saveIntakeBtn) {
+        saveIntakeBtn.addEventListener('click', function() {
+            saveIntakeEntry();
         });
     }
 

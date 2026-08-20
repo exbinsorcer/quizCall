@@ -11,7 +11,9 @@
     <div class="page main-dashboard-page" id="mainDashboard">
         <button class="theme-toggle" id="themeToggleBtn">🌙 Dark</button>
         
-        <div class="main-dashboard-card">
+        <h1 style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); margin: 0; font-size: 48px; font-family: 'Naluka', Arial, sans-serif; font-weight: bold; letter-spacing: 2px;">DASHBOARD</h1>
+        
+        <div class="main-dashboard-card" style="margin-top: 80px;">
             <div class="main-dashboard-buttons">
                 <button class="main-dashboard-btn study-btn" id="studyBtn">📚 Study</button>
                 <button class="main-dashboard-btn eat-btn" id="eatBtn">🍽️ Eat</button>
@@ -31,8 +33,47 @@
         </div>
     </div>
 
+    <!-- DAILY INTAKE PAGE -->
+    <div class="page daily-intake-page" id="dailyIntakePage" style="display: none;">
+        <button class="back-to-main-btn" id="backFromDailyIntakeBtn">← Back</button>
+        
+        <div class="intake-card">
+            <h1>Daily Intake</h1>
+            
+            <!-- Date input -->
+            <div class="intake-form">
+                <div class="form-group">
+                    <label for="intakeDate">📅 Date</label>
+                    <input type="date" id="intakeDate" class="intake-input">
+                </div>
+                
+                <!-- Calories -->
+                <div class="form-group">
+                    <label for="caloriesInput">🔥 Calories</label>
+                    <input type="number" id="caloriesInput" class="intake-input" placeholder="0" min="0">
+                </div>
+                
+                <!-- Protein -->
+                <div class="form-group">
+                    <label for="proteinInput">💪 Protein (g)</label>
+                    <input type="number" id="proteinInput" class="intake-input" placeholder="0" min="0">
+                </div>
+                
+                <!-- Carbs -->
+                <div class="form-group">
+                    <label for="carbsInput">🌾 Carbs (g)</label>
+                    <input type="number" id="carbsInput" class="intake-input" placeholder="0" min="0">
+                </div>
+                
+                <!-- Save Button -->
+                <button class="save-intake-btn" id="saveIntakeBtn">💾 Save Entry</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="notification"></div>
 
+    <script src="nutrition.js"></script>
     <script src="mainDashboard.js"></script>
 </body>
 </html>
