@@ -21,69 +21,70 @@ function loadQuizzes() {
         return;
     }
     
-    const folders = getAllFolders();
+    const units = getAllUnits();
     
-    folders.forEach(folderName => {
-        displayFolder(folderName, quizzesList);
+    // Display quizzes grouped by unit
+    units.forEach(unitName => {
+        displayUnit(unitName, quizzesList);
     });
     
-    const quizzesWithoutFolder = getQuizzesWithoutFolder();
-    if (quizzesWithoutFolder.length > 0) {
-        const noFolderContainer = document.createElement('div');
-        noFolderContainer.style.marginTop = '20px';
+    // Display quizzes without unit (shouldn't happen since unit is required, but for safety)
+    const quizzesWithoutUnit = getQuizzesWithoutUnit();
+    if (quizzesWithoutUnit.length > 0) {
+        const noUnitContainer = document.createElement('div');
+        noUnitContainer.style.marginTop = '20px';
         
-        quizzesWithoutFolder.forEach(quiz => {
-            displayQuizCard(quiz, noFolderContainer);
+        quizzesWithoutUnit.forEach(quiz => {
+            displayQuizCard(quiz, noUnitContainer);
         });
         
-        quizzesList.appendChild(noFolderContainer);
+        quizzesList.appendChild(noUnitContainer);
     }
 }
 
-function displayFolder(folderName, container) {
-    const folderElement = document.createElement('div');
-    folderElement.className = 'category-folder';
-    folderElement.id = `folder-${folderName}`;
+function displayUnit(unitName, container) {
+    const unitElement = document.createElement('div');
+    unitElement.className = 'category-folder';
+    unitElement.id = `unit-${unitName}`;
     
     const header = document.createElement('div');
     header.className = 'category-folder-header';
     
-    const folderTitle = document.createElement('h3');
-    folderTitle.className = 'category-folder-title';
-    folderTitle.innerHTML = `📁 ${folderName}`;
+    const unitTitle = document.createElement('h3');
+    unitTitle.className = 'category-folder-title';
+    unitTitle.innerHTML = `📚 ${unitName}`;
     
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'category-toggle-btn';
     toggleBtn.textContent = 'View';
-    toggleBtn.id = `toggle-${folderName}`;
+    toggleBtn.id = `toggle-${unitName}`;
     
     toggleBtn.onclick = (e) => {
         e.stopPropagation();
-        toggleFolderDisplay(folderName, toggleBtn);
+        toggleUnitDisplay(unitName, toggleBtn);
     };
     
-    header.appendChild(folderTitle);
+    header.appendChild(unitTitle);
     header.appendChild(toggleBtn);
     
     const quizzesContainer = document.createElement('div');
     quizzesContainer.className = 'category-quizzes';
-    quizzesContainer.id = `quizzes-${folderName}`;
+    quizzesContainer.id = `quizzes-${unitName}`;
     
-    const quizzesInFolder = getQuizzesByFolder(folderName);
-    const folderQuizzes = quizzesInFolder.filter(q => q.folder === folderName);
+    const unitQuizzes = getQuizzesByUnit(unitName).filter(q => q.unit === unitName);
     
-    folderQuizzes.forEach(quiz => {
+    unitQuizzes.forEach(quiz => {
         displayQuizCard(quiz, quizzesContainer);
     });
     
-    folderElement.appendChild(header);
-    folderElement.appendChild(quizzesContainer);
+    unitElement.appendChild(header);
+    unitElement.appendChild(quizzesContainer);
     
-    container.appendChild(folderElement);
+    container.appendChild(unitElement);
 }
 
-function toggleFolderDisplay(folderName, button) {
-    const container = document.getElementById(`quizzes-${folderName}`);
+function toggleUnitDisplay(unitName, button) {
+    const container = document.getElementById(`quizzes-${unitName}`);
     
     if (container.classList.contains('expanded')) {
         container.classList.remove('expanded');
@@ -177,6 +178,8 @@ function displayQuestion() {
     
     if (currentQuestion.answerType === 'multiple-choice') {
         displayMultipleChoice(currentQuestion);
+    } else if (currentQuestion.answerType === 'true-false') {
+        displayTrueFalse(currentQuestion);
     } else {
         displayFillBlank(currentQuestion);
     }
@@ -263,6 +266,45 @@ function displayMultipleChoice(question) {
     questionDisplay.appendChild(quizOptions);
 }
 
+function displayTrueFalse(question) {
+    const questionDisplay = document.getElementById('questionDisplay');
+    
+    const quizOptions = document.createElement('div');
+    quizOptions.className = 'quiz-options';
+    
+    question.answers.forEach((answer, index) => {
+        const quizOption = document.createElement('div');
+        quizOption.className = 'quiz-option';
+        
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'quiz-answer';
+        radio.value = index;
+        radio.id = `option-${index}`;
+        
+        if (userAnswers[currentQuestionIndex] === index) {
+            radio.checked = true;
+        }
+        
+        const label = document.createElement('label');
+        label.htmlFor = `option-${index}`;
+        label.textContent = answer.text;
+        
+        quizOption.appendChild(radio);
+        quizOption.appendChild(label);
+        
+        quizOption.style.cursor = 'pointer';
+        quizOption.onclick = () => {
+            radio.checked = true;
+            userAnswers[currentQuestionIndex] = index;
+        };
+        
+        quizOptions.appendChild(quizOption);
+    });
+    
+    questionDisplay.appendChild(quizOptions);
+}
+
 function displayFillBlank(question) {
     const questionDisplay = document.getElementById('questionDisplay');
     
@@ -328,18 +370,21 @@ function finishQuiz() {
     quiz.questions.forEach((question, index) => {
         const userAnswer = userAnswers[index];
         
-        if (question.answerType === 'multiple-choice') {
+        if (question.answerType === 'multiple-choice' || question.answerType === 'true-false') {
             if (userAnswer !== null && userAnswer !== undefined) {
                 const correctIndex = question.answers.findIndex(ans => ans.isCorrect);
                 if (userAnswer === correctIndex) {
                     correctCount++;
                 }
             }
-        } else {
+        } else if (question.answerType === 'fill-blank') {
             if (userAnswer) {
-                const correctAnswer = question.answers[0].text.toLowerCase().trim();
+                const correctAnswers = question.answers
+                    .filter(ans => ans.isCorrect)
+                    .map(ans => ans.text.toLowerCase().trim());
+                
                 const userAnswerLower = userAnswer.toLowerCase().trim();
-                if (userAnswerLower === correctAnswer) {
+                if (correctAnswers.includes(userAnswerLower)) {
                     correctCount++;
                 }
             }
@@ -399,17 +444,20 @@ function displayResults(quiz, correctCount, totalQuestions, percentage) {
     quiz.questions.forEach((question, qIndex) => {
         let isCorrect = false;
         
-        if (question.answerType === 'multiple-choice') {
+        if (question.answerType === 'multiple-choice' || question.answerType === 'true-false') {
             const userAnswerIndex = userAnswers[qIndex];
             if (userAnswerIndex !== null && userAnswerIndex !== undefined) {
                 const correctIndex = question.answers.findIndex(ans => ans.isCorrect);
                 isCorrect = userAnswerIndex === correctIndex;
             }
-        } else {
+        } else if (question.answerType === 'fill-blank') {
             if (userAnswers[qIndex]) {
-                const correctAnswer = question.answers[0].text.toLowerCase().trim();
-                const userAnswer = userAnswers[qIndex].toLowerCase().trim();
-                isCorrect = userAnswer === correctAnswer;
+                const correctAnswers = question.answers
+                    .filter(ans => ans.isCorrect)
+                    .map(ans => ans.text.toLowerCase().trim());
+                
+                const userAnswerLower = userAnswers[qIndex].toLowerCase().trim();
+                isCorrect = correctAnswers.includes(userAnswerLower);
             }
         }
         
@@ -424,14 +472,14 @@ function displayResults(quiz, correctCount, totalQuestions, percentage) {
         const userAnswerDiv = document.createElement('div');
         userAnswerDiv.className = `quiz-review-answer-item ${isCorrect ? 'correct' : 'incorrect'}`;
         
-        if (question.answerType === 'multiple-choice') {
+        if (question.answerType === 'multiple-choice' || question.answerType === 'true-false') {
             const userAnswerIndex = userAnswers[qIndex];
             if (userAnswerIndex !== null && userAnswerIndex !== undefined) {
                 userAnswerDiv.textContent = `Your answer: ${question.answers[userAnswerIndex].text}`;
             } else {
                 userAnswerDiv.textContent = 'Your answer: Not answered';
             }
-        } else {
+        } else if (question.answerType === 'fill-blank') {
             userAnswerDiv.textContent = `Your answer: ${userAnswers[qIndex] || 'Not answered'}`;
         }
         reviewQuestion.appendChild(userAnswerDiv);
@@ -440,11 +488,14 @@ function displayResults(quiz, correctCount, totalQuestions, percentage) {
             const correctAnswerDiv = document.createElement('div');
             correctAnswerDiv.className = 'quiz-review-answer-item correct';
             
-            if (question.answerType === 'multiple-choice') {
+            if (question.answerType === 'multiple-choice' || question.answerType === 'true-false') {
                 const correctIndex = question.answers.findIndex(ans => ans.isCorrect);
                 correctAnswerDiv.textContent = `Correct answer: ${question.answers[correctIndex].text}`;
-            } else {
-                correctAnswerDiv.textContent = `Correct answer: ${question.answers[0].text}`;
+            } else if (question.answerType === 'fill-blank') {
+                const correctAnswers = question.answers
+                    .filter(ans => ans.isCorrect)
+                    .map(ans => ans.text);
+                correctAnswerDiv.textContent = `Correct answer: ${correctAnswers.join(', ')}`;
             }
             reviewQuestion.appendChild(correctAnswerDiv);
         }

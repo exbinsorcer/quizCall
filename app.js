@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backFromCreateBtn = document.getElementById('backFromCreateBtn');
     if (backFromCreateBtn) {
         backFromCreateBtn.addEventListener('click', function() {
-            showSection('mainDashboard');
+            showSection('quizDashboard');
         });
     }
     
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backFromEditBtn = document.getElementById('backFromEditBtn');
     if (backFromEditBtn) {
         backFromEditBtn.addEventListener('click', function() {
-            showSection('mainDashboard');
+            showSection('quizDashboard');
         });
     }
     
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backFromStartBtn = document.getElementById('backFromStartBtn');
     if (backFromStartBtn) {
         backFromStartBtn.addEventListener('click', function() {
-            showSection('mainDashboard');
+            showSection('quizDashboard');
         });
     }
     
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backFromPrintBtn = document.getElementById('backFromPrintBtn');
     if (backFromPrintBtn) {
         backFromPrintBtn.addEventListener('click', function() {
-            showSection('mainDashboard');
+            showSection('quizDashboard');
         });
     }
     

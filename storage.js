@@ -49,6 +49,31 @@ function getQuizzesWithoutFolder() {
     return quizzes.filter(quiz => !quiz.folder);
 }
 
+/* ============================================================
+   UNIT FUNCTIONS (replaces folder terminology)
+   ============================================================ */
+
+function getQuizzesByUnit(unitName) {
+    const quizzes = getAllQuizzes();
+    return quizzes.filter(quiz => quiz.unit === unitName || !quiz.unit);
+}
+
+function getAllUnits() {
+    const quizzes = getAllQuizzes();
+    const units = new Set();
+    quizzes.forEach(quiz => {
+        if (quiz.unit) {
+            units.add(quiz.unit);
+        }
+    });
+    return Array.from(units).sort();
+}
+
+function getQuizzesWithoutUnit() {
+    const quizzes = getAllQuizzes();
+    return quizzes.filter(quiz => !quiz.unit);
+}
+
 function generateQuizTextFile(quiz) {
     let textContent = '';
     

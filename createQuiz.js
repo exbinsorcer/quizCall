@@ -6,11 +6,61 @@ let currentQuestions = [];
 
 function initCreateQuiz() {
     setFormValue('quizTitle', '');
-    setFormValue('quizFolder', '');
+    setFormValue('quizUnit', '');
     clearElement('questionsContainer');
+    clearElement('unitSuggestionsList');
     currentQuestions = [];
+    setupUnitSuggestionsHandlers();
     addQuestion();
 }
+
+function setupUnitSuggestionsHandlers() {
+    const unitInput = document.getElementById('quizUnit');
+    const suggestionsList = document.getElementById('unitSuggestionsList');
+    
+    if (unitInput) {
+        unitInput.addEventListener('focus', () => {
+            displayUnitSuggestions();
+        });
+        
+        unitInput.addEventListener('input', () => {
+            displayUnitSuggestions();
+        });
+        
+        // Hide suggestions when user clicks away
+        unitInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                if (suggestionsList) {
+                    suggestionsList.innerHTML = '';
+                }
+            }, 200); // Small delay to allow click on suggestion to register
+        });
+    }
+}
+
+function displayUnitSuggestions() {
+    const units = getAllUnits();
+    const suggestionsList = document.getElementById('unitSuggestionsList');
+    
+    if (suggestionsList) {
+        suggestionsList.innerHTML = '';
+        
+        if (units.length > 0) {
+            units.forEach(unit => {
+                const item = document.createElement('div');
+                item.className = 'unit-suggestion-item';
+                item.textContent = unit;
+                item.onclick = () => {
+                    document.getElementById('quizUnit').value = unit;
+                    suggestionsList.innerHTML = '';
+                };
+                suggestionsList.appendChild(item);
+            });
+        }
+    }
+}
+
+
 
 function addQuestion() {
     const questionId = createUniqueId();
@@ -52,6 +102,7 @@ function renderQuestionCard(questionObject) {
                 <select class="type-select" id="answerType-${questionObject.id}" onchange="changeAnswerType('${questionObject.id}', this.value)">
                     <option value="multiple-choice" ${questionObject.answerType === 'multiple-choice' ? 'selected' : ''}>Multiple Choice</option>
                     <option value="fill-blank" ${questionObject.answerType === 'fill-blank' ? 'selected' : ''}>Fill in the Blank</option>
+                    <option value="true-false" ${questionObject.answerType === 'true-false' ? 'selected' : ''}>True/False</option>
                 </select>
             </div>
             <div id="answersList-${questionObject.id}"></div>
@@ -71,9 +122,92 @@ function renderAnswers(questionId) {
     
     if (question.answerType === 'fill-blank') {
         answersList.innerHTML = `
-            <label>Correct Answer</label>
-            <input type="text" id="correctAnswer-${questionId}" class="answer-input" placeholder="Enter the correct answer" value="${question.answers[0]?.text || ''}">
+            <label>Correct Answer(s)</label>
         `;
+        
+        // Show existing answers
+        question.answers.forEach((answer, index) => {
+            const answerRow = document.createElement('div');
+            answerRow.className = 'option-row';
+            answerRow.style.marginBottom = '8px';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'answer-input';
+            input.placeholder = `Correct answer ${index + 1}`;
+            input.value = answer.text;
+            input.id = `fillblankAnswer-${answer.id}`;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'small-button';
+            removeBtn.textContent = 'Remove';
+            removeBtn.style.marginLeft = '8px';
+            removeBtn.onclick = () => removeAnswer(questionId, answer.id);
+            
+            answerRow.appendChild(input);
+            if (question.answers.length > 1) {
+                answerRow.appendChild(removeBtn);
+            }
+            
+            answersList.appendChild(answerRow);
+        });
+        
+        // Add Answer button
+        const addBtn = document.createElement('button');
+        addBtn.className = 'add-button';
+        addBtn.style.marginTop = '12px';
+        addBtn.textContent = '+ Add Alternative Answer';
+        addBtn.onclick = () => addAnswer(questionId);
+        answersList.appendChild(addBtn);
+    } else if (question.answerType === 'true-false') {
+        const label = document.createElement('label');
+        label.textContent = 'Select Correct Answer';
+        answersList.appendChild(label);
+        
+        const trueOption = question.answers.find(a => a.text === 'True');
+        const falseOption = question.answers.find(a => a.text === 'False');
+        
+        // True option
+        const trueRow = document.createElement('div');
+        trueRow.className = 'tf-option-row';
+        const trueRadio = document.createElement('input');
+        trueRadio.type = 'radio';
+        trueRadio.name = `correctAnswer-${questionId}`;
+        trueRadio.checked = trueOption ? trueOption.isCorrect : false;
+        trueRadio.onchange = () => {
+            question.answers.forEach(a => a.isCorrect = false);
+            if (trueOption) trueOption.isCorrect = true;
+            renderAnswers(questionId);
+        };
+        
+        const trueLabel = document.createElement('label');
+        trueLabel.className = 'tf-label';
+        trueLabel.appendChild(trueRadio);
+        trueLabel.appendChild(document.createTextNode('True'));
+        
+        trueRow.appendChild(trueLabel);
+        answersList.appendChild(trueRow);
+        
+        // False option
+        const falseRow = document.createElement('div');
+        falseRow.className = 'tf-option-row';
+        const falseRadio = document.createElement('input');
+        falseRadio.type = 'radio';
+        falseRadio.name = `correctAnswer-${questionId}`;
+        falseRadio.checked = falseOption ? falseOption.isCorrect : false;
+        falseRadio.onchange = () => {
+            question.answers.forEach(a => a.isCorrect = false);
+            if (falseOption) falseOption.isCorrect = true;
+            renderAnswers(questionId);
+        };
+        
+        const falseLabel = document.createElement('label');
+        falseLabel.className = 'tf-label';
+        falseLabel.appendChild(falseRadio);
+        falseLabel.appendChild(document.createTextNode('False'));
+        
+        falseRow.appendChild(falseLabel);
+        answersList.appendChild(falseRow);
     } else {
         const label = document.createElement('label');
         label.textContent = 'Answer Options';
@@ -170,12 +304,24 @@ function changeAnswerType(questionId, newType) {
                 isCorrect: true
             }
         ];
-    } else {
-        if (question.answers.length === 0) {
-            question.answers = [
-                { id: createUniqueId(), text: '', isCorrect: false }
-            ];
-        }
+    } else if (newType === 'true-false') {
+        question.answers = [
+            {
+                id: createUniqueId(),
+                text: 'True',
+                isCorrect: true
+            },
+            {
+                id: createUniqueId(),
+                text: 'False',
+                isCorrect: false
+            }
+        ];
+    } else if (newType === 'multiple-choice') {
+        // Reset to empty multiple choice answers
+        question.answers = [
+            { id: createUniqueId(), text: '', isCorrect: false }
+        ];
     }
     
     const select = document.getElementById(`answerType-${questionId}`);
@@ -245,7 +391,14 @@ function updateAnswerCorrectStatus(questionId, answerId, isCorrect) {
 
 function saveQuiz() {
     const title = getFormValue('quizTitle');
-    const folder = getFormValue('quizFolder');
+    const unit = getFormValue('quizUnit').trim();
+    
+    // Validate Unit is not empty
+    if (!unit) {
+        alert('❌ Unit is required. Please enter or select a unit.');
+        document.getElementById('quizUnit').focus();
+        return;
+    }
     
     currentQuestions.forEach(question => {
         const textInput = document.getElementById(`questionText-${question.id}`);
@@ -259,10 +412,26 @@ function saveQuiz() {
         }
         
         if (question.answerType === 'fill-blank') {
-            const correctInput = document.getElementById(`correctAnswer-${question.id}`);
-            if (correctInput) {
-                question.answers[0].text = correctInput.value.trim();
-                question.answers[0].isCorrect = true;
+            const answersList = document.getElementById(`answersList-${question.id}`);
+            if (answersList) {
+                const answerInputs = answersList.querySelectorAll('input[type="text"]');
+                answerInputs.forEach((input, index) => {
+                    if (question.answers[index]) {
+                        question.answers[index].text = input.value.trim();
+                        question.answers[index].isCorrect = true;
+                    }
+                });
+            }
+        } else if (question.answerType === 'true-false') {
+            const answersList = document.getElementById(`answersList-${question.id}`);
+            if (answersList) {
+                const radio = answersList.querySelector(`input[name="correctAnswer-${question.id}"]:checked`);
+                if (radio && radio.parentElement) {
+                    const selectedText = radio.parentElement.textContent.trim();
+                    question.answers.forEach(a => {
+                        a.isCorrect = (a.text === selectedText);
+                    });
+                }
             }
         } else {
             const answersList = document.getElementById(`answersList-${question.id}`);
@@ -292,7 +461,7 @@ function saveQuiz() {
     const newQuiz = {
         id: Date.now(),
         title: title,
-        folder: folder || null,
+        unit: unit,
         questions: JSON.parse(JSON.stringify(currentQuestions)),
         createdDate: new Date().toLocaleDateString()
     };
@@ -306,10 +475,10 @@ function saveQuiz() {
         
         setTimeout(() => {
             setFormValue('quizTitle', '');
-            setFormValue('quizFolder', '');
+            setFormValue('quizUnit', '');
             currentQuestions = [];
             clearElement('questionsContainer');
-            showSection('dashboard');
+            showSection('quizDashboard');
         }, 2000);
         
     } catch (error) {

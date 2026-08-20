@@ -19,45 +19,91 @@ function loadQuizzesForEditing() {
         return;
     }
     
-    const folders = getAllFolders();
+    const folders = getAllUnits();
     
-    folders.forEach(folderName => {
-        displayEditFolder(folderName, editQuizzesList);
+    folders.forEach(unitName => {
+        displayEditUnit(unitName, editQuizzesList);
     });
     
-    const quizzesWithoutFolder = getQuizzesWithoutFolder();
-    if (quizzesWithoutFolder.length > 0) {
-        const noFolderContainer = document.createElement('div');
-        noFolderContainer.style.marginTop = '20px';
+    const quizzesWithoutUnit = getQuizzesWithoutUnit();
+    if (quizzesWithoutUnit.length > 0) {
+        const noUnitContainer = document.createElement('div');
+        noUnitContainer.style.marginTop = '20px';
         
-        quizzesWithoutFolder.forEach(quiz => {
-            displayEditQuizCard(quiz, noFolderContainer);
+        quizzesWithoutUnit.forEach(quiz => {
+            displayEditQuizCard(quiz, noUnitContainer);
         });
         
-        editQuizzesList.appendChild(noFolderContainer);
+        editQuizzesList.appendChild(noUnitContainer);
     }
 }
 
-function displayEditFolder(folderName, container) {
+function populateEditingUnitSuggestions() {
+    const units = getAllUnits();
+    const unitDropdownList = document.getElementById('editingUnitDropdownList');
+    
+    if (unitDropdownList) {
+        unitDropdownList.innerHTML = '';
+        
+        if (units.length > 0) {
+            units.forEach(unit => {
+                const item = document.createElement('div');
+                item.className = 'unit-dropdown-item';
+                item.textContent = unit;
+                item.onclick = () => selectEditingUnit(unit);
+                unitDropdownList.appendChild(item);
+            });
+        }
+    }
+}
+
+function selectEditingUnit(unit) {
+    setFormValue('editingQuizUnit', unit);
+    const dropdown = document.getElementById('editingUnitDropdown');
+    if (dropdown) {
+        dropdown.classList.remove('show');
+    }
+}
+
+function setupEditingUnitDropdownHandlers() {
+    // Get all elements we need
+    const editingUnitPickerContainers = document.querySelectorAll('.editing-unit-picker-container');
+    
+    editingUnitPickerContainers.forEach(container => {
+        const dropdown = container.querySelector('.unit-dropdown');
+        
+        if (container && dropdown) {
+            container.addEventListener('mouseenter', () => {
+                dropdown.classList.add('show');
+            });
+            
+            container.addEventListener('mouseleave', () => {
+                dropdown.classList.remove('show');
+            });
+        }
+    });
+}
+
+function displayEditUnit(unitName, container) {
     const folderElement = document.createElement('div');
     folderElement.className = 'category-folder';
-    folderElement.id = `edit-folder-${folderName}`;
+    folderElement.id = `edit-unit-${unitName}`;
     
     const header = document.createElement('div');
     header.className = 'category-folder-header';
     
     const folderTitle = document.createElement('h3');
     folderTitle.className = 'category-folder-title';
-    folderTitle.innerHTML = `📁 ${folderName}`;
+    folderTitle.innerHTML = `📁 ${unitName}`;
     
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'category-toggle-btn';
     toggleBtn.textContent = 'View';
-    toggleBtn.id = `edit-toggle-${folderName}`;
+    toggleBtn.id = `edit-toggle-${unitName}`;
     
     toggleBtn.onclick = (e) => {
         e.stopPropagation();
-        toggleEditFolderDisplay(folderName, toggleBtn);
+        toggleEditUnitDisplay(unitName, toggleBtn);
     };
     
     header.appendChild(folderTitle);
@@ -65,12 +111,12 @@ function displayEditFolder(folderName, container) {
     
     const quizzesContainer = document.createElement('div');
     quizzesContainer.className = 'category-quizzes';
-    quizzesContainer.id = `edit-quizzes-${folderName}`;
+    quizzesContainer.id = `edit-quizzes-${unitName}`;
     
-    const quizzesInFolder = getQuizzesByFolder(folderName);
-    const folderQuizzes = quizzesInFolder.filter(q => q.folder === folderName);
+    const quizzesInUnit = getQuizzesByUnit(unitName);
+    const unitQuizzes = quizzesInUnit.filter(q => q.unit === unitName);
     
-    folderQuizzes.forEach(quiz => {
+    unitQuizzes.forEach(quiz => {
         displayEditQuizCard(quiz, quizzesContainer);
     });
     
@@ -80,8 +126,8 @@ function displayEditFolder(folderName, container) {
     container.appendChild(folderElement);
 }
 
-function toggleEditFolderDisplay(folderName, button) {
-    const container = document.getElementById(`edit-quizzes-${folderName}`);
+function toggleEditUnitDisplay(unitName, button) {
+    const container = document.getElementById(`edit-quizzes-${unitName}`);
     
     if (container.classList.contains('expanded')) {
         container.classList.remove('expanded');
@@ -145,7 +191,10 @@ function startEditingQuiz(quizId) {
     currentEditingQuizId = quizId;
     
     setFormValue('editingQuizTitle', quiz.title);
-    setFormValue('editingQuizFolder', quiz.folder || '');
+    setFormValue('editingQuizUnit', quiz.unit || '');
+    
+    populateEditingUnitSuggestions();
+    setupEditingUnitDropdownHandlers();
     
     clearElement('editingQuestionsContainer');
     currentEditingQuestions = JSON.parse(JSON.stringify(quiz.questions));
@@ -398,7 +447,7 @@ function updateEditAnswerCorrectStatus(questionId, answerId, isCorrect) {
 
 function saveEditedQuiz() {
     const title = getFormValue('editingQuizTitle');
-    const folder = getFormValue('editingQuizFolder');
+    const folder = getFormValue('editingQuizUnit');
     
     currentEditingQuestions.forEach(question => {
         const textInput = document.getElementById(`edit-questionText-${question.id}`);
@@ -447,7 +496,7 @@ function saveEditedQuiz() {
     
     if (quizIndex !== -1) {
         allQuizzes[quizIndex].title = title;
-        allQuizzes[quizIndex].folder = folder || null;
+        allQuizzes[quizIndex].unit = folder || null;
         allQuizzes[quizIndex].questions = JSON.parse(JSON.stringify(currentEditingQuestions));
         
         try {
