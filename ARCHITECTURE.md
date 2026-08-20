@@ -293,6 +293,11 @@ Edit `style.css` - search for `body.dark-theme` sections
 - **Main Entry:** `https://yourusername.github.io/repo-name/mainDashboard.html`
 - **QuizCall:** `https://yourusername.github.io/repo-name/index.html`
 
+## GitHub Pages Path Note
+If your repo is NOT at the root (e.g., https://username.github.io/quizCall/):
+- Use absolute paths: window.location.href = '/quizCall/quizCall.html';
+- Not relative paths: window.location.href = 'quizCall.html';
+
 **Note:** Users should visit mainDashboard.html first for theme toggle
 
 ---

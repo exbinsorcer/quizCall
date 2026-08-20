@@ -161,6 +161,19 @@ document.addEventListener('DOMContentLoaded', function() {
             showSection('dashboard');
         });
     }
+
+    // Back to Main Dashboard
+    const backToMainDashboardBtn = document.getElementById('backToMainDashboardBtn');
+    if (backToMainDashboardBtn) {
+        backToMainDashboardBtn.addEventListener('click', function() {
+            // Try GitHub Pages path first, fall back to relative path
+            if (window.location.href.includes('github.io')) {
+                window.location.href = '/quizCall/index.html';
+            } else {
+                window.location.href = './index.html';
+            }
+        });
+    }
     
     showSection('dashboard');
 });

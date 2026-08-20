@@ -18,35 +18,35 @@
          Shows buttons in order: Start, Create, Edit, Print
          ============================================================ -->
     <div class="page dashboard-page" id="dashboard">
-        <div class="dashboard-card">
-            <!-- Dashboard title -->
-            <h1>QuizCall</h1>
-            
-            <!-- Subtitle text -->
-            <p class="subtitle">Create engaging quizzes, track progress, and master any subject</p>
-            
-            <!-- Container for the main buttons -->
-            <div class="dashboard-buttons">
-                <!-- Button to navigate to Start/Take Quiz page -->
-                <button class="primary-button" id="startQuizBtn">
-                    🚀 Start
-                </button>
+        <button class="back-to-main-btn" id="backToMainDashboardBtn">← Back</button>
+        
+        <!-- Dashboard title -->
+        <h1 style="text-align: center; margin-bottom: 10px;">QuizCall</h1>
+        
+        <!-- Subtitle text -->
+        <p class="subtitle" style="text-align: center; margin-bottom: 35px;">Create engaging quizzes, track progress, and master any subject</p>
+        
+        <!-- Container for the main buttons -->
+        <div class="dashboard-buttons" style="max-width: 620px; margin: 0 auto;">
+            <!-- Button to navigate to Start/Take Quiz page -->
+            <button class="primary-button" id="startQuizBtn">
+                🚀 Start
+            </button>
 
-                <!-- Button to navigate to Create Quiz page -->
-                <button class="primary-button" id="createQuizBtn">
-                    ✏️ Create
-                </button>
-                
-                <!-- Button to navigate to Edit Quiz page -->
-                <button class="primary-button" id="editQuizBtn">
-                    📝 Edit
-                </button>
+            <!-- Button to navigate to Create Quiz page -->
+            <button class="primary-button" id="createQuizBtn">
+                ✏️ Create
+            </button>
+            
+            <!-- Button to navigate to Edit Quiz page -->
+            <button class="primary-button" id="editQuizBtn">
+                📝 Edit
+            </button>
 
-                <!-- Button to navigate to Print Quiz page -->
-                <button class="primary-button" id="printQuizBtn">
-                    🖨️ Print
-                </button>
-            </div>
+            <!-- Button to navigate to Print Quiz page -->
+            <button class="primary-button" id="printQuizBtn">
+                🖨️ Print
+            </button>
         </div>
     </div>
     
@@ -326,5 +326,12 @@
     
     <!-- Main application logic and event listeners -->
     <script src="app.js"></script>
+
+    <!-- Theme sync from main dashboard -->
+    <script>
+        // Apply saved theme from localStorage
+        const savedTheme = localStorage.getItem('app-theme') || 'light-theme';
+        document.body.className = savedTheme;
+    </script>
 </body>
 </html>
