@@ -803,9 +803,11 @@ body.dark-theme .toast {
 
 .main-dashboard-page {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     position: relative;
+    padding-top: 80px;
 }
 
 .theme-toggle {
