@@ -709,3 +709,248 @@ button {
         max-width: 90%;
     }
 }
+
+/* ============================================================
+   THEME TOGGLE & DARK MODE
+   ============================================================ */
+
+body {
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body.dark-theme {
+    background: #1f2937;
+    color: #f4f6f8;
+}
+
+body.dark-theme .dashboard-card {
+    background: #374151;
+}
+
+body.dark-theme .secondary-button {
+    background: #4b5563;
+    color: #f4f6f8;
+}
+
+body.dark-theme .title-input,
+body.dark-theme .category-input,
+body.dark-theme .question-input,
+body.dark-theme .answer-input,
+body.dark-theme .hint-input,
+body.dark-theme .type-select {
+    background: #4b5563;
+    color: #f4f6f8;
+    border-color: #6b7280;
+}
+
+body.dark-theme .question-card {
+    background: #374151;
+}
+
+body.dark-theme .category-folder {
+    background: #374151;
+}
+
+body.dark-theme .empty-state {
+    background: #374151;
+    color: #9ca3af;
+}
+
+body.dark-theme .quiz-library-card {
+    background: #374151;
+}
+
+body.dark-theme .quiz-question-card {
+    background: #374151;
+}
+
+body.dark-theme .result-area {
+    background: #374151;
+}
+
+body.dark-theme .quiz-review-container {
+    background: #4b5563;
+    border-color: #6b7280;
+}
+
+body.dark-theme .quiz-review-question {
+    background: #374151;
+}
+
+body.dark-theme .quiz-review-answer-item {
+    background: #5a6a7a;
+}
+
+body.dark-theme .quiz-option {
+    background: #4b5563;
+    border-color: #6b7280;
+}
+
+body.dark-theme .fill-answer {
+    background: #4b5563;
+    color: #f4f6f8;
+    border-color: #6b7280;
+}
+
+body.dark-theme .toast {
+    background: #f4f6f8;
+    color: #111827;
+}
+
+/* ============================================================
+   MAIN DASHBOARD
+   ============================================================ */
+
+.main-dashboard-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    border: 2px solid #2563eb;
+    background: transparent;
+    color: #2563eb;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+body.dark-theme .theme-toggle {
+    border-color: #60a5fa;
+    color: #60a5fa;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.05);
+}
+
+.main-dashboard-card {
+    text-align: center;
+}
+
+.main-dashboard-card h1 {
+    margin: 0 0 40px;
+    font-size: 48px;
+    font-family: 'Naluka', Arial, sans-serif;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.main-dashboard-buttons {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.main-dashboard-btn {
+    padding: 20px 50px;
+    font-size: 24px;
+    font-weight: 700;
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    min-width: 200px;
+}
+
+.study-btn {
+    background: #2563eb;
+    color: white;
+}
+
+.eat-btn {
+    background: #f59e0b;
+    color: white;
+}
+
+body.dark-theme .study-btn {
+    background: #3b82f6;
+}
+
+body.dark-theme .eat-btn {
+    background: #fbbf24;
+}
+
+.main-dashboard-btn:hover {
+    transform: translateY(-3px);
+    opacity: 0.9;
+}
+
+/* ============================================================
+   EAT DASHBOARD
+   ============================================================ */
+
+.eat-dashboard-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.eat-dashboard-card {
+    text-align: center;
+}
+
+.eat-dashboard-card h1 {
+    margin: 0 0 50px;
+    font-size: 42px;
+    font-family: 'Naluka', Arial, sans-serif;
+    font-weight: bold;
+}
+
+.eat-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 300px;
+}
+
+.eat-btn-item {
+    padding: 20px 40px;
+    font-size: 20px;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    background: #f59e0b;
+    color: white;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+body.dark-theme .eat-btn-item {
+    background: #fbbf24;
+}
+
+.eat-btn-item:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.back-to-main-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background: #e5e7eb;
+    color: #111827;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+body.dark-theme .back-to-main-btn {
+    background: #4b5563;
+    color: #f4f6f8;
+}
+
+.back-to-main-btn:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
