@@ -1,33 +1,11 @@
 // ============================================================
 // MAIN DASHBOARD SCRIPT
-// Handles navigation between Study and Eat + Dark/Light mode
+// Handles navigation and dark/light mode
 // ============================================================
 
 // DARK/LIGHT MODE TOGGLE
 const savedTheme = localStorage.getItem('app-theme') || 'light-theme';
 document.body.className = savedTheme;
-
-// NAVIGATION FUNCTIONS
-function showSection(sectionId) {
-    const sections = document.querySelectorAll('.page');
-    sections.forEach(section => {
-        section.style.display = 'none';
-    });
-    const targetSection = document.getElementById(sectionId);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-    }
-}
-
-function showNotification(message) {
-    const notification = document.getElementById('notification');
-    if (!notification) return;
-    notification.textContent = message;
-    notification.classList.add('show');
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
-}
 
 function toggleDarkMode() {
     const isDark = document.body.classList.contains('dark-theme');
@@ -122,22 +100,15 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleBtn.addEventListener('click', toggleDarkMode);
     }
     
-    // Study Button - goes to Quiz app
+    // Study Button - shows Quiz app
     const studyBtn = document.getElementById('studyBtn');
     if (studyBtn) {
         studyBtn.addEventListener('click', function() {
-            // Check if running on GitHub Pages or locally
-            if (window.location.href.includes('github.io')) {
-                // GitHub Pages - use absolute path
-                window.location.href = '/quizCall/quizCall.html';
-            } else {
-                // Local file - use relative path
-                window.location.href = './quizCall.html';
-            }
+            showSection('quizDashboard');
         });
     }
 
-    // Eat Button - shows Nutrition section
+    // Eat Button
     const eatBtn = document.getElementById('eatBtn');
     if (eatBtn) {
         eatBtn.addEventListener('click', function() {
@@ -178,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Progress Button - Coming Soon
+    // Progress Button
     const progressBtn = document.getElementById('progressBtn');
     if (progressBtn) {
         progressBtn.addEventListener('click', function() {
@@ -219,6 +190,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter') {
                 addReminder();
             }
+        });
+    }
+
+    // Back from Quiz Dashboard
+    const backToMainFromQuizBtn = document.getElementById('backToMainFromQuizBtn');
+    if (backToMainFromQuizBtn) {
+        backToMainFromQuizBtn.addEventListener('click', function() {
+            currentTakingQuizId = null;
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            showSection('mainDashboard');
         });
     }
 });

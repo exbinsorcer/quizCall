@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backFromCreateBtn = document.getElementById('backFromCreateBtn');
     if (backFromCreateBtn) {
         backFromCreateBtn.addEventListener('click', function() {
-            showSection('dashboard');
+            showSection('mainDashboard');
         });
     }
     
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backFromEditBtn = document.getElementById('backFromEditBtn');
     if (backFromEditBtn) {
         backFromEditBtn.addEventListener('click', function() {
-            showSection('dashboard');
+            showSection('mainDashboard');
         });
     }
     
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backFromStartBtn = document.getElementById('backFromStartBtn');
     if (backFromStartBtn) {
         backFromStartBtn.addEventListener('click', function() {
-            showSection('dashboard');
+            showSection('mainDashboard');
         });
     }
     
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backFromPrintBtn = document.getElementById('backFromPrintBtn');
     if (backFromPrintBtn) {
         backFromPrintBtn.addEventListener('click', function() {
-            showSection('dashboard');
+            showSection('mainDashboard');
         });
     }
     
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentTakingQuizId = null;
             currentQuestionIndex = 0;
             userAnswers = [];
-            showSection('dashboard');
+            showSection('mainDashboard');
         });
     }
 
@@ -174,6 +174,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    showSection('dashboard');
 });
