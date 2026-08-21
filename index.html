@@ -4,483 +4,559 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuizCall - Main</title>
+    
+    <!-- ADD THIS: -->
+    <script type="importmap">
+    {
+      "imports": {
+        "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/+esm"
+      }
+    }
+    </script>
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="light-theme">
-    <!-- MAIN DASHBOARD -->
-    <div class="page main-dashboard-page" id="mainDashboard">
-        <button class="dark-mode-toggle-btn" id="darkModeToggle">🌙</button>
-        
-        <h1 style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); margin: 0; font-size: 48px; font-family: 'Naluka', Arial, sans-serif; font-weight: bold; letter-spacing: 2px;">DASHBOARD</h1>
-        
-        <div class="main-dashboard-card" style="margin-top: 80px;">
-            <div class="main-dashboard-buttons">
-                <button class="main-dashboard-btn study-btn" id="studyBtn">📚 Study</button>
-                <button class="main-dashboard-btn eat-btn" id="eatBtn">🍽️ Eat</button>
-                <button class="main-dashboard-btn reminders-btn" id="remindersBtn">⏰ Reminders</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- EAT DASHBOARD (Placeholder for future) -->
-    <div class="page eat-dashboard-page" id="eatDashboard" style="display: none;">
-        <button class="back-to-main-btn" id="backToMainFromEatBtn">← Back</button>
-        <div class="eat-dashboard-card">
-            <h1>Nutrition</h1>
-            <div class="eat-buttons">
-                <button class="eat-btn-item" id="dailyIntakeBtn">📊 Daily Intake</button>
-                <button class="eat-btn-item" id="progressBtn">📈 Progress</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- DAILY INTAKE PAGE -->
-    <div class="page daily-intake-page" id="dailyIntakePage" style="display: none;">
-        <button class="back-to-main-btn" id="backFromDailyIntakeBtn">← Back</button>
-        
-        <div class="intake-card">
-            <h1>Daily Intake</h1>
-            
-            <!-- Date input -->
-            <div class="intake-form">
-                <div class="form-group">
-                    <label for="intakeDate">📅 Date</label>
-                    <input type="date" id="intakeDate" class="intake-input">
-                </div>
-                
-                <!-- Calories -->
-                <div class="form-group">
-                    <label for="caloriesInput">🔥 Calories</label>
-                    <input type="number" id="caloriesInput" class="intake-input" placeholder="0" min="0">
-                </div>
-                
-                <!-- Protein -->
-                <div class="form-group">
-                    <label for="proteinInput">💪 Protein (g)</label>
-                    <input type="number" id="proteinInput" class="intake-input" placeholder="0" min="0">
-                </div>
-                
-                <!-- Carbs -->
-                <div class="form-group">
-                    <label for="carbsInput">🌾 Carbs (g)</label>
-                    <input type="number" id="carbsInput" class="intake-input" placeholder="0" min="0">
-                </div>
-                
-                <!-- Save Button -->
-                <button class="save-intake-btn" id="saveIntakeBtn">💾 Save Entry</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- QUIZ CALL SECTIONS START -->
-    <!-- ============================================================
-         QUIZ DASHBOARD PAGE
-         Shows buttons in order: Start, Create, Edit, Print
-         ============================================================ -->
-    <div class="page dashboard-page" id="quizDashboard" style="display: none;">
-        <button class="back-to-main-btn" id="backToMainFromQuizBtn">← Back</button>
-        
-        <!-- Dashboard title -->
-        <h1 style="text-align: center; margin-bottom: 10px; font-family: 'Naluka', Arial, sans-serif;">QuizCall</h1>
-        
-        <!-- Subtitle text -->
-        <p class="subtitle" style="text-align: center; margin-bottom: 35px;">Create engaging quizzes, track progress, and master any subject</p>
-        
-        <!-- Container for the main buttons -->
-        <div class="dashboard-buttons" style="max-width: 620px; margin: 0 auto;">
-            <!-- Button to navigate to Start/Take Quiz page -->
-            <button class="primary-button" id="startQuizBtn">
-                🚀 Start
-            </button>
-
-            <!-- Button to navigate to Create Quiz page -->
-            <button class="primary-button" id="createQuizBtn">
-                ✏️ Create
-            </button>
-            
-            <!-- Button to navigate to Edit Quiz page -->
-            <button class="primary-button" id="editQuizBtn">
-                📝 Edit
-            </button>
-
-            <!-- Button to navigate to Print Quiz page -->
-            <button class="primary-button" id="printQuizBtn">
-                🖨️ Print
-            </button>
-
-            <!-- Button to start Review Due session -->
-            <button class="primary-button" id="reviewDueBtn">
-                🔄 Review Due
-            </button>
-
-            <!-- Button to start Mixed Practice session -->
-            <button class="primary-button" id="mixedPracticeBtn">
-                🎲 Mixed Practice
-            </button>
-
-            <!-- Button to export all quizzes -->
-            <button class="secondary-button" id="exportQuizzesBtn">
-                📥 Export Quizzes
-            </button>
-
-            <!-- Button to import quizzes -->
-            <button class="secondary-button" id="importQuizzesBtn">
-                📤 Import Quizzes
-            </button>
-
-            <!-- Hidden file input for import -->
-            <input type="file" id="importFileInput" accept=".json" style="display: none;" />
-        </div>
-    </div>
     
     <!-- ============================================================
-         CREATE QUIZ PAGE
-         Page for creating new quizzes with questions and answers
+         LOGIN SECTION - SHOWN BEFORE USER LOGS IN
          ============================================================ -->
-    <div class="page" id="createQuizSection" style="display: none;">
-        
-        <!-- Back button to return to dashboard -->
-        <button class="secondary-button" id="backFromCreateBtn" style="margin-bottom: 20px;">
-            ← Back
-        </button>
-        
-        <!-- Unit input - now at top -->
-        <div class="creator-container" style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600;">
-                📚 Unit <span style="color: #dc2626;">*</span>
-            </label>
-            <input 
-                type="text" 
-                id="quizUnit" 
-                class="unit-input" 
-                placeholder="e.g., Electrical, Physics, Math"
-                required
-            >
-            <div class="unit-suggestions-list" id="unitSuggestionsList">
-                <!-- Unit suggestions will be populated here -->
+    <div class="page" id="loginSection" style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>🎯 QuizCall</h1>
+                <p>Study smarter, remember longer</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="loginEmail" 
+                        placeholder="you@example.com" 
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input 
+                        type="password" 
+                        id="loginPassword" 
+                        placeholder="••••••••" 
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+                
+                <button type="submit" class="primary-button login-button">
+                    Log In
+                </button>
+                
+                <div id="loginError" class="login-error" style="display: none;"></div>
+            </form>
+            
+            <div class="login-footer">
+                <p>Contact your administrator for an account</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MAIN DASHBOARD SECTION - SHOWN AFTER LOGIN
+         ============================================================ -->
+    <div id="mainDashboardSection" style="display: none;">
+
+        <!-- MAIN DASHBOARD -->
+        <div class="page main-dashboard-page" id="mainDashboard">
+            <button class="dark-mode-toggle-btn" id="darkModeToggle">🌙</button>
+            <button class="secondary-button" id="logoutBtn" style="position: absolute; top: 20px; right: 20px;">Logout</button>
+            
+            <h1 style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); margin: 0; font-size: 48px; font-family: 'Naluka', Arial, sans-serif; font-weight: bold; letter-spacing: 2px;">DASHBOARD</h1>
+            
+            <div class="main-dashboard-card" style="margin-top: 80px;">
+                <div class="main-dashboard-buttons">
+                    <button class="main-dashboard-btn study-btn" id="studyBtn">📚 Study</button>
+                    <button class="main-dashboard-btn eat-btn" id="eatBtn">🍽️ Eat</button>
+                    <button class="main-dashboard-btn reminders-btn" id="remindersBtn">⏰ Reminders</button>
+                </div>
             </div>
         </div>
 
-        <!-- Top bar with title input centered -->
-        <div class="top-bar">
-            <!-- Left spacer -->
-            <div class="top-bar-spacer"></div>
+        <!-- EAT DASHBOARD (Placeholder for future) -->
+        <div class="page eat-dashboard-page" id="eatDashboard" style="display: none;">
+            <button class="back-to-main-btn" id="backToMainFromEatBtn">← Back</button>
+            <div class="eat-dashboard-card">
+                <h1>Nutrition</h1>
+                <div class="eat-buttons">
+                    <button class="eat-btn-item" id="dailyIntakeBtn">📊 Daily Intake</button>
+                    <button class="eat-btn-item" id="progressBtn">📈 Progress</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DAILY INTAKE PAGE -->
+        <div class="page daily-intake-page" id="dailyIntakePage" style="display: none;">
+            <button class="back-to-main-btn" id="backFromDailyIntakeBtn">← Back</button>
             
-            <!-- Title input field - Centered -->
-            <input 
-                type="text" 
-                id="quizTitle" 
-                class="title-input" 
-                placeholder="Quiz Title"
-            >
+            <div class="intake-card">
+                <h1>Daily Intake</h1>
+                
+                <!-- Date input -->
+                <div class="intake-form">
+                    <div class="form-group">
+                        <label for="intakeDate">📅 Date</label>
+                        <input type="date" id="intakeDate" class="intake-input">
+                    </div>
+                    
+                    <!-- Calories -->
+                    <div class="form-group">
+                        <label for="caloriesInput">🔥 Calories</label>
+                        <input type="number" id="caloriesInput" class="intake-input" placeholder="0" min="0">
+                    </div>
+                    
+                    <!-- Protein -->
+                    <div class="form-group">
+                        <label for="proteinInput">💪 Protein (g)</label>
+                        <input type="number" id="proteinInput" class="intake-input" placeholder="0" min="0">
+                    </div>
+                    
+                    <!-- Carbs -->
+                    <div class="form-group">
+                        <label for="carbsInput">🌾 Carbs (g)</label>
+                        <input type="number" id="carbsInput" class="intake-input" placeholder="0" min="0">
+                    </div>
+                    
+                    <!-- Save Button -->
+                    <button class="save-intake-btn" id="saveIntakeBtn">💾 Save Entry</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUIZ CALL SECTIONS START -->
+        <!-- ============================================================
+             QUIZ DASHBOARD PAGE
+             Shows buttons in order: Start, Create, Edit, Print
+             ============================================================ -->
+        <div class="page dashboard-page" id="quizDashboard" style="display: none;">
+            <button class="back-to-main-btn" id="backToMainFromQuizBtn">← Back</button>
             
-            <!-- Right spacer -->
-            <div class="top-bar-spacer"></div>
+            <!-- Dashboard title -->
+            <h1 style="text-align: center; margin-bottom: 10px; font-family: 'Naluka', Arial, sans-serif;">QuizCall</h1>
+            
+            <!-- Subtitle text -->
+            <p class="subtitle" style="text-align: center; margin-bottom: 35px;">Create engaging quizzes, track progress, and master any subject</p>
+            
+            <!-- Container for the main buttons -->
+            <div class="dashboard-buttons" style="max-width: 620px; margin: 0 auto;">
+                <!-- Button to navigate to Start/Take Quiz page -->
+                <button class="primary-button" id="startQuizBtn">
+                    🚀 Start
+                </button>
+
+                <!-- Button to navigate to Create Quiz page -->
+                <button class="primary-button" id="createQuizBtn">
+                    ✏️ Create
+                </button>
+                
+                <!-- Button to navigate to Edit Quiz page -->
+                <button class="primary-button" id="editQuizBtn">
+                    📝 Edit
+                </button>
+
+                <!-- Button to navigate to Print Quiz page -->
+                <button class="primary-button" id="printQuizBtn">
+                    🖨️ Print
+                </button>
+
+                <!-- Button to start Review Due session -->
+                <button class="primary-button" id="reviewDueBtn">
+                    🔄 Review Due
+                </button>
+
+                <!-- Button to start Mixed Practice session -->
+                <button class="primary-button" id="mixedPracticeBtn">
+                    🎲 Mixed Practice
+                </button>
+
+                <!-- Button to export all quizzes -->
+                <button class="secondary-button" id="exportQuizzesBtn">
+                    📥 Export Quizzes
+                </button>
+
+                <!-- Button to import quizzes -->
+                <button class="secondary-button" id="importQuizzesBtn">
+                    📤 Import Quizzes
+                </button>
+
+                <!-- Hidden file input for import -->
+                <input type="file" id="importFileInput" accept=".json" style="display: none;" />
+            </div>
         </div>
         
-        <!-- Main container for quiz creation -->
-        <div class="creator-container">
-            <!-- Container for all questions - Will be populated dynamically -->
-            <div id="questionsContainer">
-                <!-- Questions will be added here dynamically -->
-            </div>
+        <!-- ============================================================
+             CREATE QUIZ PAGE
+             Page for creating new quizzes with questions and answers
+             ============================================================ -->
+        <div class="page" id="createQuizSection" style="display: none;">
             
-            <!-- Button to add a new question-answer pair -->
-            <button class="add-button" id="addQuestionBtn">
-                + Add Question
+            <!-- Back button to return to dashboard -->
+            <button class="secondary-button" id="backFromCreateBtn" style="margin-bottom: 20px;">
+                ← Back
             </button>
-        </div>
-        
-        <!-- Save button - Located in bottom right (fixed position in CSS) -->
-        <button class="save-button" id="saveQuizBtn">
-            SAVE
-        </button>
-    </div>
-
-    <!-- ============================================================
-         EDIT QUIZ PAGE
-         Page for editing existing quizzes
-         ============================================================ -->
-    <div class="page" id="editQuizSection" style="display: none;">
-        
-        <!-- Back button to return to dashboard -->
-        <button class="secondary-button" id="backFromEditBtn" style="margin-bottom: 20px;">
-            ← Back
-        </button>
-        
-        <!-- Header with title -->
-        <div class="simple-header">
-            <h1>Edit or Delete Your Quiz</h1>
-            <p>Select a quiz to edit or delete</p>
-        </div>
-        
-        <!-- Container for quiz list - Will be populated dynamically -->
-        <div class="quiz-library" id="editQuizzesList">
-            <!-- Quizzes will be added here dynamically -->
-        </div>
-    </div>
-
-    <!-- ============================================================
-         QUIZ EDITOR PAGE
-         Page for editing a specific quiz
-         ============================================================ -->
-    <div class="page" id="quizEditorSection" style="display: none;">
-        
-        <!-- Back button to return to edit quiz list -->
-        <button class="secondary-button" id="backFromQuizEditorBtn" style="margin-bottom: 20px;">
-            ← Back
-        </button>
-        
-        <!-- Top bar with title input centered -->
-        <div class="top-bar">
-            <!-- Left spacer -->
-            <div class="top-bar-spacer"></div>
             
-            <!-- Title input field - Centered -->
-            <input 
-                type="text" 
-                id="editingQuizTitle" 
-                class="title-input" 
-                placeholder="Quiz Title"
-            >
-            
-            <!-- Right spacer -->
-            <div class="top-bar-spacer"></div>
-        </div>
-
-        <!-- Unit input for editing -->
-        <div class="creator-container" style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600;">
-                📚 Quiz Unit (Optional)
-            </label>
-            <div class="unit-picker-container editing-unit-picker-container">
+            <!-- Unit input - now at top -->
+            <div class="creator-container" style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                    📚 Unit <span style="color: #dc2626;">*</span>
+                </label>
                 <input 
                     type="text" 
-                    id="editingQuizUnit" 
+                    id="quizUnit" 
                     class="unit-input" 
                     placeholder="e.g., Electrical, Physics, Math"
+                    required
                 >
-                <button type="button" class="unit-dropdown-btn" id="editingUnitDropdownBtn">
-                    📋 Unit
+                <div class="unit-suggestions-list" id="unitSuggestionsList">
+                    <!-- Unit suggestions will be populated here -->
+                </div>
+            </div>
+
+            <!-- Top bar with title input centered -->
+            <div class="top-bar">
+                <!-- Left spacer -->
+                <div class="top-bar-spacer"></div>
+                
+                <!-- Title input field - Centered -->
+                <input 
+                    type="text" 
+                    id="quizTitle" 
+                    class="title-input" 
+                    placeholder="Quiz Title"
+                >
+                
+                <!-- Right spacer -->
+                <div class="top-bar-spacer"></div>
+            </div>
+            
+            <!-- Main container for quiz creation -->
+            <div class="creator-container">
+                <!-- Container for all questions - Will be populated dynamically -->
+                <div id="questionsContainer">
+                    <!-- Questions will be added here dynamically -->
+                </div>
+                
+                <!-- Button to add a new question-answer pair -->
+                <button class="add-button" id="addQuestionBtn">
+                    + Add Question
                 </button>
-                <div class="unit-dropdown" id="editingUnitDropdown">
-                    <div class="unit-dropdown-list" id="editingUnitDropdownList">
-                        <!-- Units will be populated here -->
+            </div>
+            
+            <!-- Save button - Located in bottom right (fixed position in CSS) -->
+            <button class="save-button" id="saveQuizBtn">
+                SAVE
+            </button>
+        </div>
+
+        <!-- ============================================================
+             EDIT QUIZ PAGE
+             Page for editing existing quizzes
+             ============================================================ -->
+        <div class="page" id="editQuizSection" style="display: none;">
+            
+            <!-- Back button to return to dashboard -->
+            <button class="secondary-button" id="backFromEditBtn" style="margin-bottom: 20px;">
+                ← Back
+            </button>
+            
+            <!-- Header with title -->
+            <div class="simple-header">
+                <h1>Edit or Delete Your Quiz</h1>
+                <p>Select a quiz to edit or delete</p>
+            </div>
+            
+            <!-- Container for quiz list - Will be populated dynamically -->
+            <div class="quiz-library" id="editQuizzesList">
+                <!-- Quizzes will be added here dynamically -->
+            </div>
+        </div>
+
+        <!-- ============================================================
+             QUIZ EDITOR PAGE
+             Page for editing a specific quiz
+             ============================================================ -->
+        <div class="page" id="quizEditorSection" style="display: none;">
+            
+            <!-- Back button to return to edit quiz list -->
+            <button class="secondary-button" id="backFromQuizEditorBtn" style="margin-bottom: 20px;">
+                ← Back
+            </button>
+            
+            <!-- Top bar with title input centered -->
+            <div class="top-bar">
+                <!-- Left spacer -->
+                <div class="top-bar-spacer"></div>
+                
+                <!-- Title input field - Centered -->
+                <input 
+                    type="text" 
+                    id="editingQuizTitle" 
+                    class="title-input" 
+                    placeholder="Quiz Title"
+                >
+                
+                <!-- Right spacer -->
+                <div class="top-bar-spacer"></div>
+            </div>
+
+            <!-- Unit input for editing -->
+            <div class="creator-container" style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                    📚 Quiz Unit (Optional)
+                </label>
+                <div class="unit-picker-container editing-unit-picker-container">
+                    <input 
+                        type="text" 
+                        id="editingQuizUnit" 
+                        class="unit-input" 
+                        placeholder="e.g., Electrical, Physics, Math"
+                    >
+                    <button type="button" class="unit-dropdown-btn" id="editingUnitDropdownBtn">
+                        📋 Unit
+                    </button>
+                    <div class="unit-dropdown" id="editingUnitDropdown">
+                        <div class="unit-dropdown-list" id="editingUnitDropdownList">
+                            <!-- Units will be populated here -->
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Main container for quiz editing -->
-        <div class="creator-container">
-            <!-- Container for all questions - Will be populated dynamically -->
-            <div id="editingQuestionsContainer">
-                <!-- Questions will be added here dynamically -->
-            </div>
             
-            <!-- Button to add a new question-answer pair -->
-            <button class="add-button" id="addEditQuestionBtn">
-                + Add Question
-            </button>
-        </div>
-        
-        <!-- Save button - Located in bottom right (fixed position in CSS) -->
-        <button class="save-button" id="saveEditQuizBtn">
-            SAVE CHANGES
-        </button>
-    </div>
-    
-    <!-- ============================================================
-         START QUIZ PAGE
-         Page displaying all saved quizzes organized by folders
-         ============================================================ -->
-    <div class="page" id="startQuizSection" style="display: none;">
-        
-        <!-- Back button to return to dashboard -->
-        <button class="secondary-button" id="backFromStartBtn" style="margin-bottom: 20px;">
-            ← Back
-        </button>
-        
-        <!-- Header with title -->
-        <div class="simple-header">
-            <h1>Available Quizzes</h1>
-            <p>Choose a quiz to get started</p>
-        </div>
-        
-        <!-- Container for quiz list - Will be populated dynamically -->
-        <div class="quiz-library" id="quizzesList">
-            <!-- Quizzes will be added here dynamically -->
-        </div>
-    </div>
-
-    <!-- ============================================================
-         MIXED PRACTICE SELECTION PAGE
-         Page for selecting quizzes for mixed/interleaved practice
-         ============================================================ -->
-    <div class="page" id="mixedPracticeSelectionSection" style="display: none;">
-        
-        <!-- Back button to return to dashboard -->
-        <button class="secondary-button" id="backFromMixedSelectBtn" style="margin-bottom: 20px;">
-            ← Back
-        </button>
-        
-        <!-- Header with title -->
-        <div class="simple-header">
-            <h1>Mixed Practice</h1>
-            <p>Select quizzes to practice together</p>
-        </div>
-        
-        <!-- Quiz selection container -->
-        <div class="mixed-practice-container">
-            <!-- Quiz selection controls -->
-            <div class="quiz-selection-controls">
-                <button class="secondary-button" id="selectAllQuizzesBtn">Select All</button>
-                <button class="secondary-button" id="clearAllQuizzesBtn">Clear All</button>
-            </div>
-            
-            <!-- Quiz list with checkboxes -->
-            <div class="quiz-selection-list" id="quizSelectionList">
-                <!-- Quizzes with checkboxes will be added here -->
-            </div>
-            
-            <!-- Question limit selector -->
-            <div class="question-limit-container">
-                <label for="questionLimitSelect">Number of questions:</label>
-                <select id="questionLimitSelect" class="question-limit-select">
-                    <option value="10">10 questions</option>
-                    <option value="20">20 questions</option>
-                    <option value="30">30 questions</option>
-                    <option value="all">All available</option>
-                </select>
-            </div>
-            
-            <!-- Start Mixed Session Button -->
-            <button class="primary-button" id="startMixedSessionBtn" style="margin-top: 20px; width: 100%; max-width: 400px; display: block; margin-left: auto; margin-right: auto;" disabled>
-                🎲 Start Mixed Practice
-            </button>
-        </div>
-    </div>
-
-    <!-- ============================================================
-         PRINT QUIZ PAGE
-         Page for selecting and printing quizzes
-         ============================================================ -->
-    <div class="page" id="printQuizSection" style="display: none;">
-        
-        <!-- Back button to return to dashboard -->
-        <button class="secondary-button" id="backFromPrintBtn" style="margin-bottom: 20px;">
-            ← Back
-        </button>
-        
-        <!-- Header with title -->
-        <div class="simple-header">
-            <h1>Download Quizzes</h1>
-            <p>Select a quiz to download as text file</p>
-        </div>
-        
-        <!-- Container for quiz list - Will be populated dynamically -->
-        <div class="quiz-library" id="printQuizzesList">
-            <!-- Quizzes will be added here dynamically -->
-        </div>
-    </div>
-    
-    <!-- ============================================================
-         QUIZ TAKING PAGE
-         Page for answering quiz questions
-         ============================================================ -->
-    <div class="page" id="quizTakingSection" style="display: none;">
-        
-        <!-- Back button to return to quiz list -->
-        <button class="secondary-button" id="backFromQuizBtn" style="margin-bottom: 20px;">
-            ← Back to Quizzes
-        </button>
-        
-        <!-- Quiz header with title and progress -->
-        <div class="quiz-header">
-            <div>
-                <h1 id="quizTitle-display">Quiz Title</h1>
-                <p id="quizProgress">Question 1 of 10</p>
-            </div>
-            <div class="timer-container">
-                <button class="timer-toggle-btn" id="timerToggleBtn" title="Show/hide timer">⏱️</button>
-                <div class="timer-display" id="timerDisplay">0:00</div>
-            </div>
-        </div>
-        
-        <!-- Quiz content area -->
-        <div class="quiz-area">
-            <!-- Question card - Will be populated dynamically -->
-            <div class="quiz-question-card" id="questionDisplay">
-                <!-- Question content will be populated here -->
-            </div>
-        </div>
-        
-        <!-- Navigation buttons for quiz questions -->
-        <div class="quiz-navigation">
-            <button class="secondary-button" id="prevQuestionBtn">← Previous</button>
-            <button class="secondary-button" id="nextQuestionBtn">Next →</button>
-            <button class="primary-button" id="finishQuizBtn" style="display: none;">
-                Finish Quiz
-            </button>
-        </div>
-    </div>
-    
-    <!-- ============================================================
-         QUIZ RESULTS PAGE
-         Page displaying quiz results and score with review
-         ============================================================ -->
-    <div class="page" id="quizResultsSection" style="display: none;">
-        
-        <!-- Back button to return to dashboard -->
-        <button class="secondary-button" id="backFromResultsBtn" style="margin-bottom: 20px;">
-            ← Back
-        </button>
-        
-        <!-- Results content - Will be populated dynamically -->
-        <div class="result-area" id="resultsContent">
-            <!-- Results will be populated here -->
-        </div>
-    </div>
-    <!-- QUIZ CALL SECTIONS END -->
-
-    <!-- REMINDERS PAGE -->
-    <div class="page reminders-page" id="remindersPage" style="display: none;">
-        <button class="back-to-main-btn" id="backFromRemindersBtn">← Back</button>
-        
-        <div class="reminders-card">
-            <h1>Reminders</h1>
-            <p class="reminders-date" id="remindersDate"></p>
-            
-            <div class="reminders-form">
-                <div class="form-group">
-                    <label for="reminderInput">Add Reminder</label>
-                    <input type="text" id="reminderInput" class="reminder-input" placeholder="Type reminder...">
+            <!-- Main container for quiz editing -->
+            <div class="creator-container">
+                <!-- Container for all questions - Will be populated dynamically -->
+                <div id="editingQuestionsContainer">
+                    <!-- Questions will be added here dynamically -->
                 </div>
-                <button class="reminder-add-btn" id="reminderAddBtn">➕ Add</button>
+                
+                <!-- Button to add a new question-answer pair -->
+                <button class="add-button" id="addEditQuestionBtn">
+                    + Add Question
+                </button>
             </div>
             
-            <div class="reminders-list" id="remindersList">
-                <!-- Reminders will appear here -->
+            <!-- Save button - Located in bottom right (fixed position in CSS) -->
+            <button class="save-button" id="saveEditQuizBtn">
+                SAVE CHANGES
+            </button>
+        </div>
+        
+        <!-- ============================================================
+             START QUIZ PAGE
+             Page displaying all saved quizzes organized by folders
+             ============================================================ -->
+        <div class="page" id="startQuizSection" style="display: none;">
+            
+            <!-- Back button to return to dashboard -->
+            <button class="secondary-button" id="backFromStartBtn" style="margin-bottom: 20px;">
+                ← Back
+            </button>
+            
+            <!-- Header with title -->
+            <div class="simple-header">
+                <h1>Available Quizzes</h1>
+                <p>Choose a quiz to get started</p>
+            </div>
+            
+            <!-- Container for quiz list - Will be populated dynamically -->
+            <div class="quiz-library" id="quizzesList">
+                <!-- Quizzes will be added here dynamically -->
             </div>
         </div>
-    </div>
 
+        <!-- ============================================================
+             MIXED PRACTICE SELECTION PAGE
+             Page for selecting quizzes for mixed/interleaved practice
+             ============================================================ -->
+        <div class="page" id="mixedPracticeSelectionSection" style="display: none;">
+            
+            <!-- Back button to return to dashboard -->
+            <button class="secondary-button" id="backFromMixedSelectBtn" style="margin-bottom: 20px;">
+                ← Back
+            </button>
+            
+            <!-- Header with title -->
+            <div class="simple-header">
+                <h1>Mixed Practice</h1>
+                <p>Select quizzes to practice together</p>
+            </div>
+            
+            <!-- Quiz selection container -->
+            <div class="mixed-practice-container">
+                <!-- Quiz selection controls -->
+                <div class="quiz-selection-controls">
+                    <button class="secondary-button" id="selectAllQuizzesBtn">Select All</button>
+                    <button class="secondary-button" id="clearAllQuizzesBtn">Clear All</button>
+                </div>
+                
+                <!-- Quiz list with checkboxes -->
+                <div class="quiz-selection-list" id="quizSelectionList">
+                    <!-- Quizzes with checkboxes will be added here -->
+                </div>
+                
+                <!-- Question limit selector -->
+                <div class="question-limit-container">
+                    <label for="questionLimitSelect">Number of questions:</label>
+                    <select id="questionLimitSelect" class="question-limit-select">
+                        <option value="10">10 questions</option>
+                        <option value="20">20 questions</option>
+                        <option value="30">30 questions</option>
+                        <option value="all">All available</option>
+                    </select>
+                </div>
+                
+                <!-- Start Mixed Session Button -->
+                <button class="primary-button" id="startMixedSessionBtn" style="margin-top: 20px; width: 100%; max-width: 400px; display: block; margin-left: auto; margin-right: auto;" disabled>
+                    🎲 Start Mixed Practice
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             PRINT QUIZ PAGE
+             Page for selecting and printing quizzes
+             ============================================================ -->
+        <div class="page" id="printQuizSection" style="display: none;">
+            
+            <!-- Back button to return to dashboard -->
+            <button class="secondary-button" id="backFromPrintBtn" style="margin-bottom: 20px;">
+                ← Back
+            </button>
+            
+            <!-- Header with title -->
+            <div class="simple-header">
+                <h1>Download Quizzes</h1>
+                <p>Select a quiz to download as text file</p>
+            </div>
+            
+            <!-- Container for quiz list - Will be populated dynamically -->
+            <div class="quiz-library" id="printQuizzesList">
+                <!-- Quizzes will be added here dynamically -->
+            </div>
+        </div>
+        
+        <!-- ============================================================
+             QUIZ TAKING PAGE
+             Page for answering quiz questions
+             ============================================================ -->
+        <div class="page" id="quizTakingSection" style="display: none;">
+            
+            <!-- Back button to return to quiz list -->
+            <button class="secondary-button" id="backFromQuizBtn" style="margin-bottom: 20px;">
+                ← Back to Quizzes
+            </button>
+            
+            <!-- Quiz header with title and progress -->
+            <div class="quiz-header">
+                <div>
+                    <h1 id="quizTitle-display">Quiz Title</h1>
+                    <p id="quizProgress">Question 1 of 10</p>
+                </div>
+                <div class="timer-container">
+                    <button class="timer-toggle-btn" id="timerToggleBtn" title="Show/hide timer">⏱️</button>
+                    <div class="timer-display" id="timerDisplay">0:00</div>
+                </div>
+            </div>
+            
+            <!-- Quiz content area -->
+            <div class="quiz-area">
+                <!-- Question card - Will be populated dynamically -->
+                <div class="quiz-question-card" id="questionDisplay">
+                    <!-- Question content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Navigation buttons for quiz questions -->
+            <div class="quiz-navigation">
+                <button class="secondary-button" id="prevQuestionBtn">← Previous</button>
+                <button class="secondary-button" id="nextQuestionBtn">Next →</button>
+                <button class="primary-button" id="finishQuizBtn" style="display: none;">
+                    Finish Quiz
+                </button>
+            </div>
+        </div>
+        
+        <!-- ============================================================
+             QUIZ RESULTS PAGE
+             Page displaying quiz results and score with review
+             ============================================================ -->
+        <div class="page" id="quizResultsSection" style="display: none;">
+            
+            <!-- Back button to return to dashboard -->
+            <button class="secondary-button" id="backFromResultsBtn" style="margin-bottom: 20px;">
+                ← Back
+            </button>
+            
+            <!-- Results content - Will be populated dynamically -->
+            <div class="result-area" id="resultsContent">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+        <!-- QUIZ CALL SECTIONS END -->
+
+        <!-- REMINDERS PAGE -->
+        <div class="page reminders-page" id="remindersPage" style="display: none;">
+            <button class="back-to-main-btn" id="backFromRemindersBtn">← Back</button>
+            
+            <div class="reminders-card">
+                <h1>Reminders</h1>
+                <p class="reminders-date" id="remindersDate"></p>
+                
+                <div class="reminders-form">
+                    <div class="form-group">
+                        <label for="reminderInput">Add Reminder</label>
+                        <input type="text" id="reminderInput" class="reminder-input" placeholder="Type reminder...">
+                    </div>
+                    <button class="reminder-add-btn" id="reminderAddBtn">➕ Add</button>
+                </div>
+                
+                <div class="reminders-list" id="remindersList">
+                    <!-- Reminders will appear here -->
+                </div>
+            </div>
+        </div>
+
+    </div><!-- End of mainDashboardSection -->
+
+    <!-- Notification Toast -->
     <div class="toast" id="notification"></div>
 
-    <!-- Quiz functionality scripts -->
-    <script src="storage.js"></script>
-    <script src="sync.js"></script>
-    <script src="reviewStorage.js"></script>
-    <script src="ui.js"></script>
-    <script src="createQuiz.js"></script>
-    <script src="editQuiz.js"></script>
-    <script src="startQuiz.js"></script>
-    <script src="printQuiz.js"></script>
-    <script src="mixedPractice.js"></script>
-    <script src="app.js"></script>
+    <!-- ============================================================
+         SCRIPT IMPORTS - CRITICAL ORDER
+         ============================================================ -->
+    <script type="module">
+        // Import auth and api FIRST (must be before anything else)
+        import './auth.js';
+        import './api.js';
+        import './app.js';
+    </script>
+
+    <!-- Then import all your other modules -->
+    <script type="module" src="./storage.js"></script>
+    <script type="module" src="./sync.js"></script>
+    <script type="module" src="./reviewStorage.js"></script>
+    <script type="module" src="./ui.js"></script>
+    <script type="module" src="./createQuiz.js"></script>
+    <script type="module" src="./editQuiz.js"></script>
+    <script type="module" src="./startQuiz.js"></script>
+    <script type="module" src="./printQuiz.js"></script>
+    <script type="module" src="./mixedPractice.js"></script>
 
     <!-- Main app scripts -->
-    <script src="nutrition.js"></script>
-    <script src="mainDashboard.js"></script>
+    <script type="module" src="./nutrition.js"></script>
+    <script type="module" src="./mainDashboard.js"></script>
+
 </body>
 </html>

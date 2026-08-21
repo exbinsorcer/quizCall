@@ -1,3 +1,120 @@
+// ============================================================
+// ADD THIS SECTION TO THE TOP OF YOUR EXISTING app.js
+// BEFORE ANY OTHER CODE
+// ============================================================
+
+import { getCurrentUser, signIn, signOut } from './auth.js';
+
+// ===== AUTH INITIALIZATION =====
+
+/**
+ * Initialize app: Check if user is logged in
+ * If not, show login screen
+ * If yes, show dashboard
+ */
+async function initializeApp() {
+    const user = await getCurrentUser();
+    const loginSection = document.getElementById('loginSection');
+    const mainDashboardSection = document.getElementById('mainDashboardSection');
+    
+    if (!user) {
+        // User not logged in - show login screen
+        loginSection.style.display = 'flex';
+        mainDashboardSection.style.display = 'none';
+        setupLoginHandlers();
+        return;
+    }
+    
+    // User logged in - show dashboard
+    loginSection.style.display = 'none';
+    mainDashboardSection.style.display = 'block';
+    
+    // Initialize the rest of the app (existing code)
+    initializeDashboard();
+}
+
+/**
+ * Setup login form handlers
+ */
+function setupLoginHandlers() {
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                loginError.style.display = 'none';
+                
+                // Attempt login
+                await signIn(email, password);
+                
+                // Success - reinitialize app to show dashboard
+                await initializeApp();
+                
+            } catch (error) {
+                // Show error message
+                loginError.textContent = error.message || 'Login failed. Please check your email and password.';
+                loginError.style.display = 'block';
+            }
+        });
+    }
+}
+
+/**
+ * Setup logout button
+ */
+function setupLogoutButton() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut();
+                // Show login screen again
+                await initializeApp();
+            } catch (error) {
+                console.error('Logout failed:', error);
+                alert('Logout failed: ' + error.message);
+            }
+        });
+    }
+}
+
+/**
+ * Initialize dashboard (existing app functionality)
+ * This is called after login succeeds
+ */
+function initializeDashboard() {
+    // Setup logout button
+    setupLogoutButton();
+    
+    // Initialize rest of app (call existing init functions here)
+    console.log('✅ Dashboard initialized - User logged in');
+    
+    // TODO: Call your existing app initialization functions here
+    // Examples:
+    // setupMainDashboard();
+    // setupQuizFeatures();
+    // etc.
+}
+
+// ===== START APP =====
+
+// Check auth state when page loads
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 QuizCall starting...');
+    await initializeApp();
+});
+
+// ============================================================
+// PASTE YOUR EXISTING app.js CODE BELOW THIS LINE
+// ============================================================
+
 /* ============================================
    MAIN APPLICATION FILE
    ============================================ */
