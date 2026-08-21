@@ -1,3 +1,15 @@
+import { getAllQuizzes } from './storage.js';
+
+async function initDashboard() {
+    try {
+        const quizzes = await getAllQuizzes();
+        displayQuizzesInDashboard(quizzes);
+    } catch (error) {
+        console.error('Failed to load quizzes:', error);
+    }
+}
+initDashboard();
+
 // ============================================================
 // MAIN DASHBOARD SCRIPT
 // Handles navigation and dark/light mode

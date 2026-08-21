@@ -1,3 +1,13 @@
+import { saveQuizData } from './storage.js';
+
+const quiz = { title, unit, questions };
+try {
+    const saved = await saveQuizData(quiz);
+    console.log('Quiz saved:', saved);
+    showNotification('Quiz saved!');
+} catch (error) {
+    showNotification('Error: ' + error.message);
+}
 /* ============================================
    CREATE QUIZ MODULE
    ============================================ */

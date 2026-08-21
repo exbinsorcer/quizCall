@@ -1,131 +1,243 @@
-/* ============================================
-   STORAGE MODULE
-   Purpose: Handle all localStorage operations
-   - Save and retrieve quizzes
-   - Data persistence
-   - Text file generation for printing
-   ============================================ */
+// storage_UPDATED.js - Database Storage Layer (replaces localStorage)
+// Uses Supabase database instead of browser localStorage
+// Same function names for compatibility with existing code
 
-function getAllQuizzes() {
-    const data = localStorage.getItem('quizzes_data');
-    return data ? JSON.parse(data) : [];
+import { 
+    getMyQuizzes, 
+    saveQuiz, 
+    updateQuiz, 
+    deleteQuiz,
+    getMyAttempts,
+    getMySettings,
+    updateSettings,
+    getReminders,
+    addReminder,
+    deleteReminder
+} from './api.js';
+
+// ===== QUIZ STORAGE =====
+
+/**
+ * Get all quizzes for current user from database
+ * @returns {Promise} - Array of quizzes
+ */
+export async function getAllQuizzes() {
+    try {
+        console.log('Loading quizzes from database...');
+        const quizzes = await getMyQuizzes();
+        console.log('✅ Loaded quizzes:', quizzes.length);
+        return quizzes || [];
+    } catch (error) {
+        console.error('❌ Error loading quizzes:', error);
+        return [];
+    }
 }
 
-function saveQuiz(quiz) {
-    const allQuizzes = getAllQuizzes();
-    allQuizzes.push(quiz);
-    localStorage.setItem('quizzes_data', JSON.stringify(allQuizzes));
+/**
+ * Get single quiz by ID from database
+ * @param {number} quizId - Quiz ID
+ * @returns {Promise} - Quiz object
+ */
+export async function getQuiz(quizId) {
+    try {
+        const quizzes = await getMyQuizzes();
+        return quizzes.find(q => q.id === quizId) || null;
+    } catch (error) {
+        console.error('Error getting quiz:', error);
+        return null;
+    }
 }
 
-function getQuizById(quizId) {
-    const quizzes = getAllQuizzes();
-    return quizzes.find(quiz => quiz.id === quizId) || null;
+/**
+ * Save new quiz to database
+ * @param {Object} quiz - Quiz data (title, unit, questions)
+ * @returns {Promise} - Saved quiz with ID
+ */
+export async function saveQuizData(quiz) {
+    try {
+        console.log('Saving quiz to database:', quiz.title);
+        const saved = await saveQuiz(quiz);
+        console.log('✅ Quiz saved:', saved);
+        return saved;
+    } catch (error) {
+        console.error('❌ Error saving quiz:', error);
+        throw error;
+    }
 }
 
-function deleteQuiz(quizId) {
-    const allQuizzes = getAllQuizzes();
-    const filtered = allQuizzes.filter(quiz => quiz.id !== quizId);
-    localStorage.setItem('quizzes_data', JSON.stringify(filtered));
+/**
+ * Update existing quiz in database
+ * @param {number} quizId - Quiz ID
+ * @param {Object} quiz - Updated quiz data
+ * @returns {Promise} - Updated quiz
+ */
+export async function updateQuizData(quizId, quiz) {
+    try {
+        console.log('Updating quiz:', quizId);
+        const updated = await updateQuiz(quizId, quiz);
+        console.log('✅ Quiz updated:', updated);
+        return updated;
+    } catch (error) {
+        console.error('❌ Error updating quiz:', error);
+        throw error;
+    }
 }
 
-function getQuizzesByFolder(folderName) {
-    const quizzes = getAllQuizzes();
-    return quizzes.filter(quiz => quiz.folder === folderName || !quiz.folder);
+/**
+ * Delete quiz from database
+ * @param {number} quizId - Quiz ID
+ * @returns {Promise} - Success
+ */
+export async function deleteQuizData(quizId) {
+    try {
+        console.log('Deleting quiz:', quizId);
+        await deleteQuiz(quizId);
+        console.log('✅ Quiz deleted');
+        return true;
+    } catch (error) {
+        console.error('❌ Error deleting quiz:', error);
+        throw error;
+    }
 }
 
-function getAllFolders() {
-    const quizzes = getAllQuizzes();
-    const folders = new Set();
-    quizzes.forEach(quiz => {
-        if (quiz.folder) {
-            folders.add(quiz.folder);
-        }
-    });
-    return Array.from(folders).sort();
+// ===== QUIZ ATTEMPTS (RESULTS) =====
+
+/**
+ * Get all quiz attempts for current user
+ * @returns {Promise} - Array of attempts
+ */
+export async function getAllAttempts() {
+    try {
+        const attempts = await getMyAttempts();
+        return attempts || [];
+    } catch (error) {
+        console.error('Error loading attempts:', error);
+        return [];
+    }
 }
 
-function getQuizzesWithoutFolder() {
-    const quizzes = getAllQuizzes();
-    return quizzes.filter(quiz => !quiz.folder);
+/**
+ * Save quiz attempt (results after completing quiz)
+ * @param {number} quizId - Quiz ID
+ * @param {number} score - Score achieved
+ * @param {number} totalQuestions - Total questions
+ * @param {number} timeSpent - Time in seconds
+ * @param {Object} answers - User's answers
+ * @returns {Promise} - Saved attempt
+ */
+export async function saveAttempt(quizId, score, totalQuestions, timeSpent, answers = {}) {
+    try {
+        console.log('Saving quiz attempt:', quizId);
+        const { saveQuizAttempt } = await import('./api.js');
+        const attempt = await saveQuizAttempt(quizId, score, totalQuestions, timeSpent, answers);
+        console.log('✅ Attempt saved');
+        return attempt;
+    } catch (error) {
+        console.error('Error saving attempt:', error);
+        throw error;
+    }
 }
 
-/* ============================================================
-   UNIT FUNCTIONS (replaces folder terminology)
-   ============================================================ */
+// ===== USER SETTINGS =====
 
-function getQuizzesByUnit(unitName) {
-    const quizzes = getAllQuizzes();
-    return quizzes.filter(quiz => quiz.unit === unitName || !quiz.unit);
+/**
+ * Get user settings from database
+ * @returns {Promise} - User settings object
+ */
+export async function loadSettings() {
+    try {
+        const settings = await getMySettings();
+        return settings || {
+            theme: 'light-theme',
+            reminders_enabled: true,
+            timer_visible_by_default: false
+        };
+    } catch (error) {
+        console.error('Error loading settings:', error);
+        return null;
+    }
 }
 
-function getAllUnits() {
-    const quizzes = getAllQuizzes();
-    const units = new Set();
-    quizzes.forEach(quiz => {
-        if (quiz.unit) {
-            units.add(quiz.unit);
-        }
-    });
-    return Array.from(units).sort();
+/**
+ * Save user settings to database
+ * @param {Object} settings - Settings to update
+ * @returns {Promise} - Updated settings
+ */
+export async function saveSettings(settings) {
+    try {
+        console.log('Saving settings...');
+        const updated = await updateSettings(settings);
+        console.log('✅ Settings saved');
+        return updated;
+    } catch (error) {
+        console.error('Error saving settings:', error);
+        throw error;
+    }
 }
 
-function getQuizzesWithoutUnit() {
-    const quizzes = getAllQuizzes();
-    return quizzes.filter(quiz => !quiz.unit);
+// ===== REMINDERS =====
+
+/**
+ * Get all reminders for current user
+ * @returns {Promise} - Array of reminders
+ */
+export async function getRemindersData() {
+    try {
+        const reminders = await getReminders();
+        return reminders || [];
+    } catch (error) {
+        console.error('Error loading reminders:', error);
+        return [];
+    }
 }
 
-function generateQuizTextFile(quiz) {
-    let textContent = '';
-    
-    textContent += `${'='.repeat(80)}\n`;
-    textContent += `${quiz.title.toUpperCase()}\n`;
-    textContent += `${'='.repeat(80)}\n\n`;
-    
-    textContent += `Total Questions: ${quiz.questions.length}\n`;
-    textContent += `Date Created: ${quiz.createdDate}\n`;
-    textContent += `${'='.repeat(80)}\n\n`;
-    
-    quiz.questions.forEach((question, index) => {
-        textContent += `Question ${index + 1}: ${question.question}\n`;
-        
-        if (question.answerType === 'multiple-choice') {
-            question.answers.forEach((answer, answerIndex) => {
-                textContent += `  ${String.fromCharCode(97 + answerIndex)}) ${answer.text}\n`;
-            });
-        } else {
-            textContent += `  Answer: ____________________________________________________\n`;
-        }
-        
-        textContent += '\n';
-    });
-    
-    textContent += `\n${'='.repeat(80)}\n`;
-    textContent += `ANSWER KEY\n`;
-    textContent += `${'='.repeat(80)}\n\n`;
-    
-    quiz.questions.forEach((question, index) => {
-        if (question.answerType === 'multiple-choice') {
-            const correctIndex = question.answers.findIndex(ans => ans.isCorrect);
-            const correctAnswer = String.fromCharCode(97 + correctIndex).toUpperCase();
-            textContent += `Question ${index + 1}: ${correctAnswer}\n`;
-        } else {
-            const correctAnswer = question.answers[0].text;
-            textContent += `Question ${index + 1}: ${correctAnswer}\n`;
-        }
-    });
-    
-    return textContent;
+/**
+ * Add a reminder
+ * @param {string} text - Reminder text
+ * @returns {Promise} - Created reminder
+ */
+export async function addReminderData(text) {
+    try {
+        console.log('Adding reminder...');
+        const reminder = await addReminder(text);
+        console.log('✅ Reminder added');
+        return reminder;
+    } catch (error) {
+        console.error('Error adding reminder:', error);
+        throw error;
+    }
 }
 
-function downloadQuizTextFile(quiz) {
-    const textContent = generateQuizTextFile(quiz);
-    const blob = new Blob([textContent], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${quiz.title.replace(/\s+/g, '_')}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+/**
+ * Delete a reminder
+ * @param {string} id - Reminder ID
+ * @returns {Promise} - Success
+ */
+export async function deleteReminderData(id) {
+    try {
+        console.log('Deleting reminder:', id);
+        await deleteReminder(id);
+        console.log('✅ Reminder deleted');
+        return true;
+    } catch (error) {
+        console.error('Error deleting reminder:', error);
+        throw error;
+    }
 }
+
+// ===== EXPORTS FOR COMPATIBILITY =====
+
+export default {
+    getAllQuizzes,
+    getQuiz,
+    saveQuizData,
+    updateQuizData,
+    deleteQuizData,
+    getAllAttempts,
+    saveAttempt,
+    loadSettings,
+    saveSettings,
+    getRemindersData,
+    addReminderData,
+    deleteReminderData
+};

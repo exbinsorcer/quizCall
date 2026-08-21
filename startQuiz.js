@@ -12,6 +12,25 @@ let questionStartTime = null;
 let timerInterval = null;
 let isReviewDueMode = false;
 
+import { getQuiz, saveAttempt } from './storage.js';
+
+try {
+    const quiz = await getQuiz(quizId);
+    if (!quiz) { showNotification('Quiz not found'); return; }
+    displayQuiz(quiz);
+} catch (error) {
+    showNotification('Error loading quiz: ' + error.message);
+}
+
+async function saveResults(score, timeSpent, answers) {
+    try {
+        await saveAttempt(quizId, score, quiz.questions.length, timeSpent, answers);
+        showResults(score, quiz.questions.length);
+    } catch (error) {
+        showNotification('Error saving results: ' + error.message);
+    }
+}
+
 function getCurrentQuiz() {
     // Check if it's a mixed session (convert to string for startsWith check)
     if (currentTakingQuizId && String(currentTakingQuizId).startsWith('mixed-')) {
