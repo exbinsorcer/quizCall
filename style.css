@@ -18,6 +18,15 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     background: #f4f6f8;
     color: #1f2937;
+    /* Prevent text selection on all devices */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Prevent zoom on double tap (iOS) */
+    -webkit-touch-callout: none;
+    /* Prevent long press context menu on Android */
+    -webkit-tap-highlight-color: transparent;
 }
 
 button,
@@ -25,16 +34,34 @@ input,
 textarea,
 select {
     font: inherit;
+    /* Allow selection in form fields */
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 button {
     cursor: pointer;
+    /* Prevent selection on buttons */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Prevent blue highlight on tap (Android/iOS) */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
 }
 
 .page {
     position: relative;
     min-height: 100vh;
     padding: 32px;
+    /* Prevent selection of page content */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 /* ============================================================
@@ -928,6 +955,11 @@ body.dark-theme .timer-display {
     position: relative;
     min-height: 150px;
     color: #1f2937;
+    /* Prevent selection of quiz content */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .quiz-question {
@@ -962,6 +994,13 @@ h2.quiz-question {
     border: 2px solid #d1d5db;
     border-radius: 10px;
     cursor: pointer;
+    /* Prevent selection of options */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Prevent blue highlight on tap */
+    -webkit-tap-highlight-color: transparent;
 }
 
 .quiz-option:hover {

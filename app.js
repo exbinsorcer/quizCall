@@ -253,3 +253,51 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+/* ============================================================
+   PREVENT INSPECTION & CONTEXT MENU
+   Block right-click, long-press, and inspect element
+   ============================================================ */
+
+// Prevent right-click context menu
+document.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    return false;
+});
+
+// Prevent long-press on Android (shows context menu)
+document.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) {
+        e.preventDefault();
+        return false;
+    }
+}, { passive: false });
+
+document.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 1) {
+        e.preventDefault();
+        return false;
+    }
+}, { passive: false });
+
+// Prevent holding down on Android
+let touchStartTime = 0;
+document.addEventListener('touchstart', () => {
+    touchStartTime = Date.now();
+}, false);
+
+document.addEventListener('touchend', (e) => {
+    const touchDuration = Date.now() - touchStartTime;
+    if (touchDuration > 500) {
+        e.preventDefault();
+        return false;
+    }
+}, false);
+
+// Prevent F12 developer tools (optional - can be bypassed)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+        return false;
+    }
+}, true);
