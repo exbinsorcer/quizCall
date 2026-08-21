@@ -1,415 +1,265 @@
-/* ============================================
-   START QUIZ MODULE
-   ============================================ */
+// startQuiz.js - Phase 4: Start and Take Quizzes from Database
+// Loads quizzes from database, allows user to take them and saves attempts
 
+import { getAllQuizzes, getQuiz, saveAttempt } from './storage.js';
+
+// ===== STATE =====
 let currentTakingQuizId = null;
+let currentQuiz = null;
 let currentQuestionIndex = 0;
 let userAnswers = [];
-let hintShown = false;
+let quizStartTime = null;
 
-// Timer tracking
-let questionStartTime = null;
-let timerInterval = null;
-let isReviewDueMode = false;
+// ===== INITIALIZATION =====
 
-import { getQuiz, saveAttempt } from './storage.js';
-
-try {
-    const quiz = await getQuiz(quizId);
-    if (!quiz) { showNotification('Quiz not found'); return; }
-    displayQuiz(quiz);
-} catch (error) {
-    showNotification('Error loading quiz: ' + error.message);
-}
-
-async function saveResults(score, timeSpent, answers) {
+/**
+ * Initialize Start Quiz section
+ * Load all quizzes from database
+ */
+export async function initStartQuiz() {
+    console.log('🎯 Initializing Start Quiz section...');
+    
     try {
-        await saveAttempt(quizId, score, quiz.questions.length, timeSpent, answers);
-        showResults(score, quiz.questions.length);
+        // Load all quizzes from database
+        const quizzes = await getAllQuizzes();
+        console.log('✅ Loaded quizzes:', quizzes.length);
+        
+        // Display quizzes for selection
+        displayQuizzesForSelection(quizzes);
     } catch (error) {
-        showNotification('Error saving results: ' + error.message);
+        console.error('❌ Error loading quizzes:', error);
+        showNotification('Error loading quizzes: ' + error.message);
     }
 }
 
-function getCurrentQuiz() {
-    // Check if it's a mixed session (convert to string for startsWith check)
-    if (currentTakingQuizId && String(currentTakingQuizId).startsWith('mixed-')) {
-        return getMixedQuizData();
-    }
-    
-    // Otherwise get regular quiz
-    return getQuizById(currentTakingQuizId);
-}
+// ===== DISPLAY QUIZZES =====
 
-function startReviewDueSession() {
-    const dueQuizzes = getDueQuizzesForReview();
+/**
+ * Display quizzes in the selection list
+ * @param {Array} quizzes - Array of quiz objects
+ */
+function displayQuizzesForSelection(quizzes) {
+    console.log('Displaying quizzes for selection:', quizzes.length);
     
-    if (dueQuizzes.length === 0) {
-        showNotification('✅ No questions to review! You\'re all caught up!');
+    const quizList = document.getElementById('startQuizzesList');
+    
+    if (!quizList) {
+        console.error('Start quizzes list element not found');
         return;
     }
     
-    // Start with the first due quiz
-    const quiz = dueQuizzes[0];
-    isReviewDueMode = true;
-    
-    startTakingQuiz(quiz.id);
-}
-
-function loadQuizzes() {
-    const quizzes = getAllQuizzes();
-    const quizzesList = document.getElementById('quizzesList');
-    
-    clearElement('quizzesList');
+    // Clear existing content
+    quizList.innerHTML = '';
     
     if (quizzes.length === 0) {
-        const emptyState = document.createElement('div');
-        emptyState.className = 'empty-state';
-        emptyState.innerHTML = '<p>No quizzes available yet. Create one to get started!</p>';
-        quizzesList.appendChild(emptyState);
+        quizList.innerHTML = '<p style="text-align: center; color: #999;">No quizzes available. Create one first!</p>';
         return;
     }
     
-    const units = getAllUnits();
-    
-    // Display quizzes grouped by unit
-    units.forEach(unitName => {
-        displayUnit(unitName, quizzesList);
+    // Create quiz selection cards
+    quizzes.forEach(quiz => {
+        const quizCard = createQuizSelectionCard(quiz);
+        quizList.appendChild(quizCard);
     });
-    
-    // Display quizzes without unit (shouldn't happen since unit is required, but for safety)
-    const quizzesWithoutUnit = getQuizzesWithoutUnit();
-    if (quizzesWithoutUnit.length > 0) {
-        const noUnitContainer = document.createElement('div');
-        noUnitContainer.style.marginTop = '20px';
-        
-        quizzesWithoutUnit.forEach(quiz => {
-            displayQuizCard(quiz, noUnitContainer);
-        });
-        
-        quizzesList.appendChild(noUnitContainer);
-    }
 }
 
-function displayUnit(unitName, container) {
-    const unitElement = document.createElement('div');
-    unitElement.className = 'category-folder';
-    unitElement.id = `unit-${unitName}`;
+/**
+ * Create a quiz selection card
+ * @param {Object} quiz - Quiz object
+ * @returns {HTMLElement} - Quiz card element
+ */
+function createQuizSelectionCard(quiz) {
+    const card = document.createElement('div');
+    card.className = 'quiz-selection-card';
+    card.id = `quiz-select-${quiz.id}`;
     
-    const header = document.createElement('div');
-    header.className = 'category-folder-header';
+    const questionsCount = quiz.questions ? quiz.questions.length : 0;
     
-    const unitTitle = document.createElement('h3');
-    unitTitle.className = 'category-folder-title';
-    unitTitle.innerHTML = `📚 ${unitName}`;
-    
-    const toggleBtn = document.createElement('button');
-    toggleBtn.className = 'category-toggle-btn';
-    toggleBtn.textContent = 'View';
-    toggleBtn.id = `toggle-${unitName}`;
-    
-    toggleBtn.onclick = (e) => {
-        e.stopPropagation();
-        toggleUnitDisplay(unitName, toggleBtn);
-    };
-    
-    header.appendChild(unitTitle);
-    header.appendChild(toggleBtn);
-    
-    const quizzesContainer = document.createElement('div');
-    quizzesContainer.className = 'category-quizzes';
-    quizzesContainer.id = `quizzes-${unitName}`;
-    
-    const unitQuizzes = getQuizzesByUnit(unitName).filter(q => q.unit === unitName);
-    
-    unitQuizzes.forEach(quiz => {
-        displayQuizCard(quiz, quizzesContainer);
-    });
-    
-    unitElement.appendChild(header);
-    unitElement.appendChild(quizzesContainer);
-    
-    container.appendChild(unitElement);
-}
-
-function toggleUnitDisplay(unitName, button) {
-    const container = document.getElementById(`quizzes-${unitName}`);
-    
-    if (container.classList.contains('expanded')) {
-        container.classList.remove('expanded');
-        button.textContent = 'View';
-    } else {
-        container.classList.add('expanded');
-        button.textContent = 'Show Less';
-    }
-}
-
-function displayQuizCard(quiz, container) {
-    const quizCard = document.createElement('div');
-    quizCard.className = 'quiz-library-card';
-    
-    const infoSection = document.createElement('div');
-    infoSection.innerHTML = `
-        <h2>${quiz.title}</h2>
-        <p>${quiz.questions.length} question${quiz.questions.length !== 1 ? 's' : ''} | Created: ${quiz.createdDate}</p>
+    card.innerHTML = `
+        <div class="quiz-selection-content">
+            <h3>${escapeHtml(quiz.title || 'Untitled Quiz')}</h3>
+            <p class="quiz-selection-meta">
+                <span>📚 ${escapeHtml(quiz.unit || 'No unit')}</span>
+                <span>❓ ${questionsCount} questions</span>
+            </p>
+        </div>
+        <button class="primary-button start-quiz-btn" data-quiz-id="${quiz.id}">
+            ▶️ Start
+        </button>
     `;
     
-    const actionsSection = document.createElement('div');
-    actionsSection.className = 'quiz-card-actions';
+    // Add click listener to start button
+    const startBtn = card.querySelector('.start-quiz-btn');
+    startBtn.addEventListener('click', async () => {
+        await startQuizSession(parseInt(quiz.id));
+    });
     
-    const startBtn = document.createElement('button');
-    startBtn.className = 'primary-button';
-    startBtn.textContent = 'Start';
-    startBtn.onclick = () => startTakingQuiz(quiz.id);
-    
-    actionsSection.appendChild(startBtn);
-    
-    quizCard.appendChild(infoSection);
-    quizCard.appendChild(actionsSection);
-    
-    container.appendChild(quizCard);
+    return card;
 }
 
-function startTakingQuiz(quizId) {
-    const quiz = getQuizById(quizId);
+// ===== START QUIZ SESSION =====
+
+/**
+ * Start a quiz session for a specific quiz
+ * @param {number} quizId - Quiz ID to start
+ */
+async function startQuizSession(quizId) {
+    console.log('Starting quiz session:', quizId);
     
-    if (!quiz) {
-        alert('Quiz not found!');
+    try {
+        // Load quiz from database
+        const quiz = await getQuiz(quizId);
+        
+        if (!quiz) {
+            showNotification('Quiz not found');
+            return;
+        }
+        
+        if (!quiz.questions || quiz.questions.length === 0) {
+            showNotification('This quiz has no questions');
+            return;
+        }
+        
+        // Initialize session
+        currentTakingQuizId = quiz.id;
+        currentQuiz = quiz;
+        currentQuestionIndex = 0;
+        userAnswers = [];
+        quizStartTime = Date.now();
+        
+        // Show quiz taking section
+        const startSection = document.getElementById('startQuizSection');
+        const quizSection = document.getElementById('quizTakingSection');
+        
+        if (startSection) startSection.style.display = 'none';
+        if (quizSection) quizSection.style.display = 'block';
+        
+        // Display first question
+        displayQuestion();
+    } catch (error) {
+        console.error('❌ Error starting quiz:', error);
+        showNotification('Error loading quiz: ' + error.message);
+    }
+}
+
+// ===== DISPLAY QUESTIONS =====
+
+/**
+ * Display current question
+ */
+function displayQuestion() {
+    if (!currentQuiz || !currentQuiz.questions || currentQuestionIndex >= currentQuiz.questions.length) {
         return;
     }
     
-    currentTakingQuizId = quizId;
-    currentQuestionIndex = 0;
-    hintShown = false;
-    userAnswers = new Array(quiz.questions.length).fill(null);
+    const question = currentQuiz.questions[currentQuestionIndex];
+    const questionContainer = document.getElementById('currentQuestionContainer');
     
-    showSection('quizTakingSection');
-    displayQuestion();
-}
-
-function displayQuestion() {
-    const quiz = getCurrentQuiz();
-    if (!quiz) return;
-    
-    const currentQuestion = quiz.questions[currentQuestionIndex];
-    if (!currentQuestion) return;
-    
-    hintShown = false;
-    
-    const progressText = `Question ${currentQuestionIndex + 1} of ${quiz.questions.length}`;
-    document.getElementById('quizProgress').textContent = progressText;
-    document.getElementById('quizTitle-display').textContent = quiz.title;
-    
-    const questionDisplay = document.getElementById('questionDisplay');
-    questionDisplay.innerHTML = '';
-    
-    const questionText = document.createElement('h2');
-    questionText.className = 'quiz-question';
-    questionText.textContent = currentQuestion.question;
-    questionDisplay.appendChild(questionText);
-    
-    // Show source quiz name for mixed practice
-    if (quiz.isMixedSession && currentQuestion.sourceQuiz) {
-        const sourceLabel = document.createElement('p');
-        sourceLabel.style.fontSize = '14px';
-        sourceLabel.style.color = '#6b7280';
-        sourceLabel.style.marginTop = '8px';
-        sourceLabel.style.fontStyle = 'italic';
-        sourceLabel.textContent = `📚 From: ${currentQuestion.sourceQuiz}`;
-        questionDisplay.appendChild(sourceLabel);
+    if (!questionContainer) {
+        console.error('Question container not found');
+        return;
     }
     
-    if (currentQuestion.hint) {
-        const hintContainer = document.createElement('div');
-        hintContainer.className = 'hint-container';
-        
-        const hintButtonWrapper = document.createElement('div');
-        hintButtonWrapper.className = 'hint-button-wrapper';
-        
-        const hintBtn = document.createElement('button');
-        hintBtn.className = 'hint-button';
-        hintBtn.textContent = '💡 Show Hint';
-        hintBtn.onclick = () => toggleHint(currentQuestion.hint, hintBtn);
-        
-        hintButtonWrapper.appendChild(hintBtn);
-        hintContainer.appendChild(hintButtonWrapper);
-        questionDisplay.appendChild(hintContainer);
+    // Clear container
+    questionContainer.innerHTML = '';
+    
+    // Create question display
+    const questionDiv = document.createElement('div');
+    questionDiv.className = 'question-display';
+    
+    // Question number and text
+    const questionHeader = document.createElement('div');
+    questionHeader.style.marginBottom = '20px';
+    questionHeader.innerHTML = `
+        <h3>Question ${currentQuestionIndex + 1} of ${currentQuiz.questions.length}</h3>
+        <p style="font-size: 18px; margin-top: 10px;">${escapeHtml(question.text || '')}</p>
+    `;
+    questionDiv.appendChild(questionHeader);
+    
+    // Answers
+    const answersDiv = document.createElement('div');
+    answersDiv.className = 'answers-display';
+    
+    if (question.answers && question.answers.length > 0) {
+        question.answers.forEach((answer, index) => {
+            const label = document.createElement('label');
+            label.className = 'answer-option';
+            label.style.display = 'flex';
+            label.style.alignItems = 'center';
+            label.style.padding = '12px';
+            label.style.margin = '10px 0';
+            label.style.border = '2px solid #ddd';
+            label.style.borderRadius = '8px';
+            label.style.cursor = 'pointer';
+            label.style.transition = 'all 0.2s';
+            
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = `question-${currentQuestionIndex}`;
+            input.value = index;
+            input.className = 'answer-radio';
+            
+            // Check if this answer was already selected
+            if (userAnswers[currentQuestionIndex] === index) {
+                input.checked = true;
+            }
+            
+            input.addEventListener('change', () => {
+                userAnswers[currentQuestionIndex] = index;
+                console.log('Answer selected:', index);
+            });
+            
+            const span = document.createElement('span');
+            span.style.marginLeft = '10px';
+            span.textContent = escapeHtml(answer.text || '');
+            
+            label.appendChild(input);
+            label.appendChild(span);
+            answersDiv.appendChild(label);
+        });
     }
     
-    if (currentQuestion.answerType === 'multiple-choice') {
-        displayMultipleChoice(currentQuestion);
-    } else if (currentQuestion.answerType === 'true-false') {
-        displayTrueFalse(currentQuestion);
-    } else {
-        displayFillBlank(currentQuestion);
-    }
+    questionDiv.appendChild(answersDiv);
+    questionContainer.appendChild(questionDiv);
     
-    updateNavigationButtons(quiz);
-    startQuestionTimer();
+    // Update navigation buttons
+    updateNavigationButtons();
 }
 
-function toggleHint(hintText, button) {
-    if (hintShown) {
-        const overlay = document.querySelector('.hint-overlay');
-        const box = document.querySelector('.hint-box');
-        if (overlay) overlay.remove();
-        if (box) box.remove();
-        hintShown = false;
-        button.textContent = '💡 Show Hint';
-    } else {
-        const overlay = document.createElement('div');
-        overlay.className = 'hint-overlay';
-        overlay.onclick = () => toggleHint(hintText, button);
-        document.body.appendChild(overlay);
-        
-        const hintBox = document.createElement('div');
-        hintBox.className = 'hint-box';
-        
-        const hintContent = document.createElement('div');
-        hintContent.className = 'hint-box-content';
-        hintContent.textContent = '💭 Hint';
-        
-        const hintBoxText = document.createElement('div');
-        hintBoxText.className = 'hint-box-text';
-        hintBoxText.textContent = hintText;
-        
-        hintBox.appendChild(hintContent);
-        hintBox.appendChild(hintBoxText);
-        document.body.appendChild(hintBox);
-        
-        hintShown = true;
-        button.textContent = '💡 Hide Hint';
-    }
-}
-
-function displayMultipleChoice(question) {
-    const questionDisplay = document.getElementById('questionDisplay');
-    
-    const quizOptions = document.createElement('div');
-    quizOptions.className = 'quiz-options';
-    
-    question.answers.forEach((answer, index) => {
-        const quizOption = document.createElement('div');
-        quizOption.className = 'quiz-option';
-        
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.name = 'quiz-answer';
-        radio.value = index;
-        radio.id = `answer-${index}`;
-        
-        if (userAnswers[currentQuestionIndex] === index) {
-            radio.checked = true;
-        }
-        
-        radio.onchange = () => {
-            userAnswers[currentQuestionIndex] = index;
-        };
-        
-        const label = document.createElement('label');
-        label.style.cursor = 'pointer';
-        label.style.width = '100%';
-        label.htmlFor = `answer-${index}`;
-        label.appendChild(radio);
-        label.appendChild(document.createTextNode(' ' + answer.text));
-        
-        quizOption.appendChild(label);
-        
-        quizOption.style.cursor = 'pointer';
-        quizOption.onclick = () => {
-            radio.checked = true;
-            userAnswers[currentQuestionIndex] = index;
-        };
-        
-        quizOptions.appendChild(quizOption);
-    });
-    
-    questionDisplay.appendChild(quizOptions);
-}
-
-function displayTrueFalse(question) {
-    const questionDisplay = document.getElementById('questionDisplay');
-    
-    const quizOptions = document.createElement('div');
-    quizOptions.className = 'quiz-options';
-    
-    question.answers.forEach((answer, index) => {
-        const quizOption = document.createElement('div');
-        quizOption.className = 'quiz-option';
-        
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.name = 'quiz-answer';
-        radio.value = index;
-        radio.id = `option-${index}`;
-        
-        if (userAnswers[currentQuestionIndex] === index) {
-            radio.checked = true;
-        }
-        
-        const label = document.createElement('label');
-        label.htmlFor = `option-${index}`;
-        label.textContent = answer.text;
-        
-        quizOption.appendChild(radio);
-        quizOption.appendChild(label);
-        
-        quizOption.style.cursor = 'pointer';
-        quizOption.onclick = () => {
-            radio.checked = true;
-            userAnswers[currentQuestionIndex] = index;
-        };
-        
-        quizOptions.appendChild(quizOption);
-    });
-    
-    questionDisplay.appendChild(quizOptions);
-}
-
-function displayFillBlank(question) {
-    const questionDisplay = document.getElementById('questionDisplay');
-    
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'fill-answer';
-    input.placeholder = 'Type your answer here';
-    
-    if (userAnswers[currentQuestionIndex]) {
-        input.value = userAnswers[currentQuestionIndex];
-    }
-    
-    input.onchange = () => {
-        userAnswers[currentQuestionIndex] = input.value.trim();
-    };
-    
-    input.onkeyup = () => {
-        userAnswers[currentQuestionIndex] = input.value.trim();
-    };
-    
-    questionDisplay.appendChild(input);
-}
-
-function updateNavigationButtons(quiz) {
+/**
+ * Update previous/next button states
+ */
+function updateNavigationButtons() {
     const prevBtn = document.getElementById('prevQuestionBtn');
     const nextBtn = document.getElementById('nextQuestionBtn');
     const finishBtn = document.getElementById('finishQuizBtn');
     
-    // Hide/show previous button (hide on first question)
-    if (currentQuestionIndex === 0) {
-        prevBtn.style.display = 'none';
-    } else {
-        prevBtn.style.display = 'inline-block';
+    if (prevBtn) {
+        prevBtn.disabled = currentQuestionIndex === 0;
     }
     
-    if (currentQuestionIndex === quiz.questions.length - 1) {
-        nextBtn.style.display = 'none';
-        finishBtn.style.display = 'inline-block';
-    } else {
-        nextBtn.style.display = 'inline-block';
-        finishBtn.style.display = 'none';
+    if (nextBtn) {
+        if (currentQuestionIndex === currentQuiz.questions.length - 1) {
+            nextBtn.style.display = 'none';
+        } else {
+            nextBtn.style.display = 'block';
+        }
+    }
+    
+    if (finishBtn) {
+        if (currentQuestionIndex === currentQuiz.questions.length - 1) {
+            finishBtn.style.display = 'block';
+        } else {
+            finishBtn.style.display = 'none';
+        }
     }
 }
 
+// ===== NAVIGATION =====
+
+/**
+ * Go to previous question
+ */
 function goToPreviousQuestion() {
     if (currentQuestionIndex > 0) {
         currentQuestionIndex--;
@@ -417,281 +267,215 @@ function goToPreviousQuestion() {
     }
 }
 
+/**
+ * Go to next question
+ */
 function goToNextQuestion() {
-    const quiz = getCurrentQuiz();
-    if (!quiz) return;
-    
-    // Record answer time for current question if answered
-    if (userAnswers[currentQuestionIndex] !== null) {
-        recordAnswerTime(quiz.questions[currentQuestionIndex]);
-    }
-    
-    if (currentQuestionIndex < quiz.questions.length - 1) {
+    if (currentQuestionIndex < currentQuiz.questions.length - 1) {
         currentQuestionIndex++;
         displayQuestion();
     }
 }
 
-function startQuestionTimer() {
-    // Clear any existing timer
-    if (timerInterval) {
-        clearInterval(timerInterval);
-    }
+/**
+ * Finish quiz and save results
+ */
+async function finishQuiz() {
+    console.log('Finishing quiz...');
     
-    questionStartTime = Date.now();
-    
-    // Set up timer display toggle button
-    const timerToggleBtn = document.getElementById('timerToggleBtn');
-    if (timerToggleBtn && !timerToggleBtn.onclick) {
-        timerToggleBtn.onclick = toggleTimerDisplay;
-    }
-    
-    // Initialize timer display
-    const timerDisplay = document.getElementById('timerDisplay');
-    if (timerDisplay) {
-        timerDisplay.textContent = '0:00';
-        // Check if timer should be visible by default
-        if (getTimerVisibility()) {
-            timerDisplay.classList.add('visible');
-        }
-    }
-    
-    // Start timer update interval (update every 100ms)
-    timerInterval = setInterval(updateTimerDisplay, 100);
-}
-
-function updateTimerDisplay() {
-    if (!questionStartTime) return;
-    
-    const elapsed = Math.floor((Date.now() - questionStartTime) / 1000);
-    const minutes = Math.floor(elapsed / 60);
-    const seconds = elapsed % 60;
-    
-    const timerDisplay = document.getElementById('timerDisplay');
-    if (timerDisplay && timerDisplay.classList.contains('visible')) {
-        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    }
-}
-
-function toggleTimerDisplay() {
-    const timerDisplay = document.getElementById('timerDisplay');
-    if (timerDisplay) {
-        timerDisplay.classList.toggle('visible');
-        const isNowVisible = timerDisplay.classList.contains('visible');
-        setTimerVisibility(isNowVisible);
-    }
-}
-
-function stopQuestionTimer() {
-    if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
-    
-    return questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
-}
-
-function recordAnswerTime(question) {
-    const secondsTaken = stopQuestionTimer();
-    
-    // Initialize review data for this question if needed
-    initQuestionReview(question.id);
-    
-    // Determine if answer was correct
-    const userAnswer = userAnswers[currentQuestionIndex];
-    let wasCorrect = false;
-    
-    if (userAnswer !== null && userAnswer !== undefined) {
-        if (question.answerType === 'multiple-choice' || question.answerType === 'true-false') {
-            const correctIndex = question.answers.findIndex(ans => ans.isCorrect);
-            wasCorrect = userAnswer === correctIndex;
-        } else if (question.answerType === 'fill-blank') {
-            const correctAnswers = question.answers
-                .filter(ans => ans.isCorrect)
-                .map(ans => ans.text.toLowerCase().trim());
-            
-            const userAnswerLower = userAnswer.toLowerCase().trim();
-            wasCorrect = correctAnswers.includes(userAnswerLower);
-        }
-    }
-    
-    // Update review data
-    updateQuestionReview(question.id, wasCorrect, secondsTaken);
-}
-
-function finishQuiz() {
-    const quiz = getCurrentQuiz();
-    if (!quiz) return;
-    
-    // Record answer time for the last question
-    if (userAnswers[currentQuestionIndex] !== null) {
-        recordAnswerTime(quiz.questions[currentQuestionIndex]);
-    }
-    
-    let correctCount = 0;
-    
-    quiz.questions.forEach((question, index) => {
-        const userAnswer = userAnswers[index];
+    try {
+        // Calculate score
+        let score = 0;
+        currentQuiz.questions.forEach((question, index) => {
+            const userAnswerIndex = userAnswers[index];
+            if (userAnswerIndex !== undefined && question.answers[userAnswerIndex]) {
+                if (question.answers[userAnswerIndex].isCorrect) {
+                    score++;
+                }
+            }
+        });
         
-        if (question.answerType === 'multiple-choice' || question.answerType === 'true-false') {
-            if (userAnswer !== null && userAnswer !== undefined) {
-                const correctIndex = question.answers.findIndex(ans => ans.isCorrect);
-                if (userAnswer === correctIndex) {
-                    correctCount++;
-                }
-            }
-        } else if (question.answerType === 'fill-blank') {
-            if (userAnswer) {
-                const correctAnswers = question.answers
-                    .filter(ans => ans.isCorrect)
-                    .map(ans => ans.text.toLowerCase().trim());
-                
-                const userAnswerLower = userAnswer.toLowerCase().trim();
-                if (correctAnswers.includes(userAnswerLower)) {
-                    correctCount++;
-                }
-            }
-        }
-    });
-    
-    const percentage = Math.round((correctCount / quiz.questions.length) * 100);
-    
-    displayResults(quiz, correctCount, quiz.questions.length, percentage);
+        // Calculate time spent
+        const timeSpent = Math.round((Date.now() - quizStartTime) / 1000);
+        
+        console.log(`Score: ${score}/${currentQuiz.questions.length}, Time: ${timeSpent}s`);
+        
+        // Save attempt to database
+        await saveAttempt(
+            currentTakingQuizId,
+            score,
+            currentQuiz.questions.length,
+            timeSpent,
+            userAnswers
+        );
+        
+        // Show results
+        displayResults(score, currentQuiz.questions.length, timeSpent);
+    } catch (error) {
+        console.error('❌ Error finishing quiz:', error);
+        showNotification('Error saving results: ' + error.message);
+    }
 }
 
-function displayResults(quiz, correctCount, totalQuestions, percentage) {
-    const resultsContent = document.getElementById('resultsContent');
+/**
+ * Display quiz results
+ * @param {number} score - Score achieved
+ * @param {number} total - Total questions
+ * @param {number} timeSpent - Time spent in seconds
+ */
+function displayResults(score, total, timeSpent) {
+    const resultsSection = document.getElementById('quizResultsSection');
+    const quizSection = document.getElementById('quizTakingSection');
     
-    resultsContent.innerHTML = '';
+    if (!resultsSection) {
+        console.error('Results section not found');
+        return;
+    }
     
-    const scoreBadge = document.createElement('div');
-    scoreBadge.className = 'result-score-top';
-    scoreBadge.textContent = `Score: ${percentage}%`;
-    resultsContent.appendChild(scoreBadge);
+    if (quizSection) quizSection.style.display = 'none';
+    if (resultsSection) resultsSection.style.display = 'block';
     
-    const heading = document.createElement('h2');
-    heading.textContent = 'Quiz Complete!';
-    resultsContent.appendChild(heading);
+    // Calculate percentage
+    const percentage = Math.round((score / total) * 100);
     
+    // Determine message
     let message = '';
     if (percentage === 100) {
-        message = '🎉 Perfect Score!';
+        message = '🎉 Perfect score!';
     } else if (percentage >= 80) {
-        message = '🌟 Great Job!';
+        message = '🌟 Great job!';
     } else if (percentage >= 60) {
-        message = '👍 Good Try!';
+        message = '👍 Good effort!';
     } else {
-        message = '💪 Keep Practicing!';
+        message = '📚 Keep practicing!';
     }
     
-    const messageEl = document.createElement('p');
-    messageEl.textContent = message;
-    messageEl.style.fontSize = '18px';
-    messageEl.style.marginBottom = '20px';
-    resultsContent.appendChild(messageEl);
+    // Format time
+    const minutes = Math.floor(timeSpent / 60);
+    const seconds = timeSpent % 60;
+    const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
     
-    const breakdown = document.createElement('p');
-    breakdown.textContent = `You got ${correctCount} out of ${totalQuestions} questions correct`;
-    breakdown.style.marginBottom = '30px';
-    breakdown.style.color = '#6b7280';
-    resultsContent.appendChild(breakdown);
-    
-    const reviewContainer = document.createElement('div');
-    reviewContainer.className = 'quiz-review-container';
-    
-    const reviewHeading = document.createElement('h3');
-    reviewHeading.style.marginTop = '0';
-    reviewHeading.textContent = 'Quiz Review';
-    reviewContainer.appendChild(reviewHeading);
-    
-    quiz.questions.forEach((question, qIndex) => {
-        let isCorrect = false;
+    // Display results
+    const resultsContent = document.getElementById('quizResultsContent');
+    if (resultsContent) {
+        resultsContent.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px;">
+                <h2 style="font-size: 36px; margin-bottom: 20px;">${message}</h2>
+                <div style="background: rgba(0,0,0,0.05); border-radius: 12px; padding: 30px; margin-bottom: 30px;">
+                    <h3 style="font-size: 48px; margin: 0;">${score} / ${total}</h3>
+                    <p style="font-size: 24px; margin: 10px 0; color: #666;">${percentage}%</p>
+                    <p style="font-size: 16px; color: #999;">Time: ${timeStr}</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// ===== UTILITY FUNCTIONS =====
+
+/**
+ * Escape HTML special characters
+ * @param {string} text - Text to escape
+ * @returns {string} - Escaped text
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
+ * Show notification to user
+ * @param {string} message - Notification message
+ */
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    if (notification) {
+        notification.textContent = message;
+        notification.style.display = 'block';
         
-        if (question.answerType === 'multiple-choice' || question.answerType === 'true-false') {
-            const userAnswerIndex = userAnswers[qIndex];
-            if (userAnswerIndex !== null && userAnswerIndex !== undefined) {
-                const correctIndex = question.answers.findIndex(ans => ans.isCorrect);
-                isCorrect = userAnswerIndex === correctIndex;
-            }
-        } else if (question.answerType === 'fill-blank') {
-            if (userAnswers[qIndex]) {
-                const correctAnswers = question.answers
-                    .filter(ans => ans.isCorrect)
-                    .map(ans => ans.text.toLowerCase().trim());
-                
-                const userAnswerLower = userAnswers[qIndex].toLowerCase().trim();
-                isCorrect = correctAnswers.includes(userAnswerLower);
-            }
-        }
-        
-        const reviewQuestion = document.createElement('div');
-        reviewQuestion.className = `quiz-review-question ${isCorrect ? 'correct' : 'incorrect'}`;
-        
-        const questionTitle = document.createElement('p');
-        questionTitle.className = 'quiz-review-question-title';
-        questionTitle.textContent = `${qIndex + 1}. ${question.question} ${isCorrect ? '✓' : '✗'}`;
-        reviewQuestion.appendChild(questionTitle);
-        
-        const userAnswerDiv = document.createElement('div');
-        userAnswerDiv.className = `quiz-review-answer-item ${isCorrect ? 'correct' : 'incorrect'}`;
-        
-        if (question.answerType === 'multiple-choice' || question.answerType === 'true-false') {
-            const userAnswerIndex = userAnswers[qIndex];
-            if (userAnswerIndex !== null && userAnswerIndex !== undefined) {
-                userAnswerDiv.textContent = `Your answer: ${question.answers[userAnswerIndex].text}`;
-            } else {
-                userAnswerDiv.textContent = 'Your answer: Not answered';
-            }
-        } else if (question.answerType === 'fill-blank') {
-            userAnswerDiv.textContent = `Your answer: ${userAnswers[qIndex] || 'Not answered'}`;
-        }
-        reviewQuestion.appendChild(userAnswerDiv);
-        
-        if (!isCorrect) {
-            const correctAnswerDiv = document.createElement('div');
-            correctAnswerDiv.className = 'quiz-review-answer-item correct';
-            
-            if (question.answerType === 'multiple-choice' || question.answerType === 'true-false') {
-                const correctIndex = question.answers.findIndex(ans => ans.isCorrect);
-                correctAnswerDiv.textContent = `Correct answer: ${question.answers[correctIndex].text}`;
-            } else if (question.answerType === 'fill-blank') {
-                const correctAnswers = question.answers
-                    .filter(ans => ans.isCorrect)
-                    .map(ans => ans.text);
-                correctAnswerDiv.textContent = `Correct answer: ${correctAnswers.join(', ')}`;
-            }
-            reviewQuestion.appendChild(correctAnswerDiv);
-        }
-        
-        reviewContainer.appendChild(reviewQuestion);
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    } else {
+        console.log('Notification:', message);
+    }
+}
+
+/**
+ * Show a section and hide others
+ * @param {string} sectionId - ID of section to show
+ */
+function showSection(sectionId) {
+    const sections = document.querySelectorAll('[id*="Section"], [id*="Dashboard"], [id*="Page"]');
+    sections.forEach(section => {
+        section.style.display = 'none';
     });
     
-    resultsContent.appendChild(reviewContainer);
-    
-    const actions = document.createElement('div');
-    actions.style.display = 'flex';
-    actions.style.gap = '12px';
-    actions.style.justifyContent = 'center';
-    actions.style.marginTop = '20px';
-    
-    const tryAgainBtn = document.createElement('button');
-    tryAgainBtn.className = 'primary-button';
-    tryAgainBtn.textContent = 'Try Again';
-    tryAgainBtn.onclick = () => {
-        startTakingQuiz(currentTakingQuizId);
-    };
-    actions.appendChild(tryAgainBtn);
-    
-    const backBtn = document.createElement('button');
-    backBtn.className = 'secondary-button';
-    backBtn.textContent = 'Back to Quizzes';
-    backBtn.onclick = () => {
-        showSection('startQuizSection');
-        loadQuizzes();
-    };
-    actions.appendChild(backBtn);
-    
-    resultsContent.appendChild(actions);
-    
-    showSection('quizResultsSection');
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.style.display = 'block';
+    }
 }
+
+// ===== SETUP EVENT LISTENERS =====
+
+/**
+ * Setup event listeners for quiz navigation
+ */
+function setupQuizEventListeners() {
+    // Previous Question
+    const prevBtn = document.getElementById('prevQuestionBtn');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', goToPreviousQuestion);
+    }
+    
+    // Next Question
+    const nextBtn = document.getElementById('nextQuestionBtn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', goToNextQuestion);
+    }
+    
+    // Finish Quiz
+    const finishBtn = document.getElementById('finishQuizBtn');
+    if (finishBtn) {
+        finishBtn.addEventListener('click', finishQuiz);
+    }
+    
+    // Back from Quiz
+    const backFromQuizBtn = document.getElementById('backFromQuizBtn');
+    if (backFromQuizBtn) {
+        backFromQuizBtn.addEventListener('click', () => {
+            currentTakingQuizId = null;
+            currentQuiz = null;
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            showSection('startQuizSection');
+            initStartQuiz();
+        });
+    }
+    
+    // Back from Results
+    const backFromResultsBtn = document.getElementById('backFromResultsBtn');
+    if (backFromResultsBtn) {
+        backFromResultsBtn.addEventListener('click', () => {
+            currentTakingQuizId = null;
+            currentQuiz = null;
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            showSection('mainDashboard');
+        });
+    }
+}
+
+// ===== EXPORTS =====
+
+export default {
+    initStartQuiz,
+    goToPreviousQuestion,
+    goToNextQuestion,
+    finishQuiz
+};
+
+// Setup listeners when module loads
+setupQuizEventListeners();

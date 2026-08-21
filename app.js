@@ -1,9 +1,11 @@
 // ============================================================
 // app.js - PHASE 4: AUTHENTICATION + DASHBOARD
+// FIXED: Functions exported and bound to window for scope access
 // ============================================================
 
 import { getCurrentUser, signIn, signOut } from './auth.js';
 import { initEditQuiz } from './editQuiz.js';
+import { initStartQuiz } from './startQuiz.js';
 
 // ===== AUTH INITIALIZATION =====
 
@@ -129,9 +131,14 @@ function setupMainDashboardButtons() {
     // Start Quiz Button
     const startQuizBtn = document.getElementById('startQuizBtn');
     if (startQuizBtn) {
-        startQuizBtn.addEventListener('click', function() {
-            loadQuizzes();
-            showSection('startQuizSection');
+        startQuizBtn.addEventListener('click', async function() {
+            try {
+                await initStartQuiz();
+                showSection('startQuizSection');
+            } catch (error) {
+                console.error('Error initializing start quiz:', error);
+                showNotification('Error loading quizzes: ' + error.message);
+            }
         });
     }
     
@@ -139,7 +146,9 @@ function setupMainDashboardButtons() {
     const createQuizBtn = document.getElementById('createQuizBtn');
     if (createQuizBtn) {
         createQuizBtn.addEventListener('click', function() {
-            initCreateQuiz();
+            if (typeof initCreateQuiz === 'function') {
+                initCreateQuiz();
+            }
             showSection('createQuizSection');
         });
     }
@@ -162,8 +171,12 @@ function setupMainDashboardButtons() {
     const printQuizBtn = document.getElementById('printQuizBtn');
     if (printQuizBtn) {
         printQuizBtn.addEventListener('click', function() {
-            loadQuizzesForPrinting();
-            showSection('printQuizSection');
+            if (typeof loadQuizzesForPrinting === 'function') {
+                loadQuizzesForPrinting();
+                showSection('printQuizSection');
+            } else {
+                showNotification('Print feature coming soon!');
+            }
         });
     }
     
@@ -171,7 +184,11 @@ function setupMainDashboardButtons() {
     const reviewDueBtn = document.getElementById('reviewDueBtn');
     if (reviewDueBtn) {
         reviewDueBtn.addEventListener('click', function() {
-            startReviewDueSession();
+            if (typeof startReviewDueSession === 'function') {
+                startReviewDueSession();
+            } else {
+                showNotification('Review feature coming soon!');
+            }
         });
     }
     
@@ -179,8 +196,12 @@ function setupMainDashboardButtons() {
     const mixedPracticeBtn = document.getElementById('mixedPracticeBtn');
     if (mixedPracticeBtn) {
         mixedPracticeBtn.addEventListener('click', function() {
-            loadQuizzesForMixedPractice();
-            showSection('mixedPracticeSelectionSection');
+            if (typeof loadQuizzesForMixedPractice === 'function') {
+                loadQuizzesForMixedPractice();
+                showSection('mixedPracticeSelectionSection');
+            } else {
+                showNotification('Mixed practice feature coming soon!');
+            }
         });
     }
     
@@ -188,8 +209,10 @@ function setupMainDashboardButtons() {
     const backFromMixedSelectBtn = document.getElementById('backFromMixedSelectBtn');
     if (backFromMixedSelectBtn) {
         backFromMixedSelectBtn.addEventListener('click', function() {
-            selectedQuizzes.clear();
-            showSection('quizDashboard');
+            if (window.selectedQuizzes) {
+                selectedQuizzes.clear();
+            }
+            showSection('mainDashboard');
         });
     }
     
@@ -197,7 +220,9 @@ function setupMainDashboardButtons() {
     const selectAllQuizzesBtn = document.getElementById('selectAllQuizzesBtn');
     if (selectAllQuizzesBtn) {
         selectAllQuizzesBtn.addEventListener('click', function() {
-            selectAllQuizzes();
+            if (typeof selectAllQuizzes === 'function') {
+                selectAllQuizzes();
+            }
         });
     }
     
@@ -205,7 +230,9 @@ function setupMainDashboardButtons() {
     const clearAllQuizzesBtn = document.getElementById('clearAllQuizzesBtn');
     if (clearAllQuizzesBtn) {
         clearAllQuizzesBtn.addEventListener('click', function() {
-            clearAllQuizzes();
+            if (typeof clearAllQuizzes === 'function') {
+                clearAllQuizzes();
+            }
         });
     }
     
@@ -213,7 +240,11 @@ function setupMainDashboardButtons() {
     const startMixedSessionBtn = document.getElementById('startMixedSessionBtn');
     if (startMixedSessionBtn) {
         startMixedSessionBtn.addEventListener('click', function() {
-            startMixedSession();
+            if (typeof startMixedSession === 'function') {
+                startMixedSession();
+            } else {
+                showNotification('Mixed practice feature coming soon!');
+            }
         });
     }
     
@@ -221,7 +252,11 @@ function setupMainDashboardButtons() {
     const exportQuizzesBtn = document.getElementById('exportQuizzesBtn');
     if (exportQuizzesBtn) {
         exportQuizzesBtn.addEventListener('click', function() {
-            exportAllData();
+            if (typeof exportAllData === 'function') {
+                exportAllData();
+            } else {
+                showNotification('Export feature coming soon!');
+            }
         });
     }
     
@@ -229,7 +264,10 @@ function setupMainDashboardButtons() {
     const importQuizzesBtn = document.getElementById('importQuizzesBtn');
     if (importQuizzesBtn) {
         importQuizzesBtn.addEventListener('click', function() {
-            document.getElementById('importFileInput').click();
+            const importFileInput = document.getElementById('importFileInput');
+            if (importFileInput) {
+                importFileInput.click();
+            }
         });
     }
     
@@ -237,7 +275,9 @@ function setupMainDashboardButtons() {
     const importFileInput = document.getElementById('importFileInput');
     if (importFileInput) {
         importFileInput.addEventListener('change', function(e) {
-            handleImportFile(e.target.files[0]);
+            if (typeof handleImportFile === 'function') {
+                handleImportFile(e.target.files[0]);
+            }
             e.target.value = '';
         });
     }
@@ -253,7 +293,7 @@ function setupCreateQuizButtons() {
     const backFromCreateBtn = document.getElementById('backFromCreateBtn');
     if (backFromCreateBtn) {
         backFromCreateBtn.addEventListener('click', function() {
-            showSection('quizDashboard');
+            showSection('mainDashboard');
         });
     }
     
@@ -261,7 +301,9 @@ function setupCreateQuizButtons() {
     const addQuestionBtn = document.getElementById('addQuestionBtn');
     if (addQuestionBtn) {
         addQuestionBtn.addEventListener('click', function() {
-            addQuestion();
+            if (typeof addQuestion === 'function') {
+                addQuestion();
+            }
         });
     }
     
@@ -270,7 +312,11 @@ function setupCreateQuizButtons() {
     if (saveQuizBtn) {
         saveQuizBtn.addEventListener('click', async function() {
             try {
-                await saveQuiz();
+                if (typeof saveQuiz === 'function') {
+                    await saveQuiz();
+                } else {
+                    showNotification('Save function not found');
+                }
             } catch (error) {
                 console.error('Error saving quiz:', error);
                 showNotification('Error saving quiz: ' + error.message);
@@ -289,7 +335,7 @@ function setupEditQuizButtons() {
     const backFromEditBtn = document.getElementById('backFromEditBtn');
     if (backFromEditBtn) {
         backFromEditBtn.addEventListener('click', function() {
-            showSection('quizDashboard');
+            showSection('mainDashboard');
         });
     }
     
@@ -297,8 +343,7 @@ function setupEditQuizButtons() {
     const backFromQuizEditorBtn = document.getElementById('backFromQuizEditorBtn');
     if (backFromQuizEditorBtn) {
         backFromQuizEditorBtn.addEventListener('click', function() {
-            // This is now handled by editQuiz.js
-            location.reload(); // Simple reload for now
+            location.reload();
         });
     }
 }
@@ -313,48 +358,20 @@ function setupStartQuizButtons() {
     const backFromStartBtn = document.getElementById('backFromStartBtn');
     if (backFromStartBtn) {
         backFromStartBtn.addEventListener('click', function() {
-            showSection('quizDashboard');
+            showSection('mainDashboard');
         });
     }
     
     // Back from Quiz
     const backFromQuizBtn = document.getElementById('backFromQuizBtn');
     if (backFromQuizBtn) {
-        backFromQuizBtn.addEventListener('click', function() {
-            currentTakingQuizId = null;
-            currentQuestionIndex = 0;
-            userAnswers = [];
-            window.currentMixedQuiz = null;
-            loadQuizzes();
-            showSection('startQuizSection');
-        });
-    }
-    
-    // Previous Question
-    const prevQuestionBtn = document.getElementById('prevQuestionBtn');
-    if (prevQuestionBtn) {
-        prevQuestionBtn.addEventListener('click', function() {
-            goToPreviousQuestion();
-        });
-    }
-    
-    // Next Question
-    const nextQuestionBtn = document.getElementById('nextQuestionBtn');
-    if (nextQuestionBtn) {
-        nextQuestionBtn.addEventListener('click', function() {
-            goToNextQuestion();
-        });
-    }
-    
-    // Finish Quiz
-    const finishQuizBtn = document.getElementById('finishQuizBtn');
-    if (finishQuizBtn) {
-        finishQuizBtn.addEventListener('click', async function() {
+        backFromQuizBtn.addEventListener('click', async function() {
             try {
-                await finishQuiz();
+                await initStartQuiz();
+                showSection('startQuizSection');
             } catch (error) {
-                console.error('Error finishing quiz:', error);
-                showNotification('Error saving results: ' + error.message);
+                console.error('Error reloading quizzes:', error);
+                showNotification('Error loading quizzes: ' + error.message);
             }
         });
     }
@@ -370,11 +387,7 @@ function setupResultsButtons() {
     const backFromResultsBtn = document.getElementById('backFromResultsBtn');
     if (backFromResultsBtn) {
         backFromResultsBtn.addEventListener('click', function() {
-            currentTakingQuizId = null;
-            currentQuestionIndex = 0;
-            userAnswers = [];
-            window.currentMixedQuiz = null;
-            showSection('quizDashboard');
+            showSection('mainDashboard');
         });
     }
 }
@@ -389,7 +402,7 @@ function setupPrintButtons() {
     const backFromPrintBtn = document.getElementById('backFromPrintBtn');
     if (backFromPrintBtn) {
         backFromPrintBtn.addEventListener('click', function() {
-            showSection('quizDashboard');
+            showSection('mainDashboard');
         });
     }
 }
@@ -400,9 +413,9 @@ function setupPrintButtons() {
  * Show a section and hide others
  * @param {string} sectionId - ID of section to show
  */
-function showSection(sectionId) {
+export function showSection(sectionId) {
     // Hide all sections
-    const sections = document.querySelectorAll('[id*="Section"]');
+    const sections = document.querySelectorAll('[id*="Section"], [id*="Dashboard"], [id*="Page"]');
     sections.forEach(section => {
         section.style.display = 'none';
     });
@@ -415,19 +428,10 @@ function showSection(sectionId) {
 }
 
 /**
- * Apply theme settings
- */
-function applyThemeSettings() {
-    // This can be expanded to load user's theme preference from database
-    const body = document.body;
-    body.classList.add('light-theme'); // Default theme
-}
-
-/**
  * Show notification to user
  * @param {string} message - Message to display
  */
-function showNotification(message) {
+export function showNotification(message) {
     const notification = document.getElementById('notification');
     if (notification) {
         notification.textContent = message;
@@ -439,6 +443,15 @@ function showNotification(message) {
     } else {
         console.log('Notification:', message);
     }
+}
+
+/**
+ * Apply theme settings
+ */
+function applyThemeSettings() {
+    // This can be expanded to load user's theme preference from database
+    const body = document.body;
+    body.classList.add('light-theme'); // Default theme
 }
 
 // ===== SECURITY: PREVENT INSPECTION =====
@@ -485,6 +498,12 @@ document.addEventListener('keydown', (e) => {
         return false;
     }
 }, true);
+
+// ===== BIND FUNCTIONS TO WINDOW FOR INLINE HANDLER ACCESSIBILITY =====
+// This allows inline HTML event handlers (like onclick="") to access these functions
+
+window.showSection = showSection;
+window.showNotification = showNotification;
 
 // ===== START APP =====
 
