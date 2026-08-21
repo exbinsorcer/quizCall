@@ -1,11 +1,13 @@
 // ============================================================
-// app.js - PHASE 4: AUTHENTICATION + DASHBOARD
-// FIXED: Functions exported and bound to window for scope access
+// app.js - PHASE 4: AUTHENTICATION + DASHBOARD (FIXED v2)
+// FIXED: Better error handling, logging, and form submission
 // ============================================================
 
 import { getCurrentUser, signIn, signOut } from './auth.js';
 import { initEditQuiz } from './editQuiz.js';
 import { initStartQuiz } from './startQuiz.js';
+
+console.log('📱 App module loading...');
 
 // ===== AUTH INITIALIZATION =====
 
@@ -15,69 +17,137 @@ import { initStartQuiz } from './startQuiz.js';
  * If yes, show dashboard
  */
 async function initializeApp() {
-    console.log('🔍 Checking authentication...');
+    console.log('🔍 Checking authentication status...');
     
-    const user = await getCurrentUser();
-    const loginSection = document.getElementById('loginSection');
-    const mainDashboardSection = document.getElementById('mainDashboardSection');
-    
-    if (!user) {
-        // User not logged in - show login screen
-        console.log('❌ User not logged in - showing login screen');
-        loginSection.style.display = 'flex';
-        mainDashboardSection.style.display = 'none';
-        setupLoginHandlers();
-        return;
+    try {
+        const user = await getCurrentUser();
+        const loginSection = document.getElementById('loginSection');
+        const mainDashboardSection = document.getElementById('mainDashboardSection');
+        
+        if (!loginSection || !mainDashboardSection) {
+            console.error('❌ Required DOM elements not found');
+            return;
+        }
+        
+        if (!user) {
+            // User not logged in - show login screen
+            console.log('❌ User not logged in - showing login screen');
+            loginSection.style.display = 'flex';
+            mainDashboardSection.style.display = 'none';
+            setupLoginHandlers();
+            return;
+        }
+        
+        // User logged in - show dashboard
+        console.log('✅ User authenticated:', user.email);
+        loginSection.style.display = 'none';
+        mainDashboardSection.style.display = 'block';
+        
+        // Initialize the rest of the app
+        initializeDashboard();
+    } catch (error) {
+        console.error('❌ Error during app initialization:', error);
+        showNotification('Error initializing app. Please refresh the page.');
     }
-    
-    // User logged in - show dashboard
-    console.log('✅ User logged in - showing dashboard');
-    loginSection.style.display = 'none';
-    mainDashboardSection.style.display = 'block';
-    
-    // Initialize the rest of the app
-    initializeDashboard();
 }
 
 /**
  * Setup login form handlers
+ * CRITICAL: This must run AFTER DOM is ready and loginForm element exists
  */
 function setupLoginHandlers() {
+    console.log('⚙️ Setting up login form handlers...');
+    
     const loginForm = document.getElementById('loginForm');
     const loginError = document.getElementById('loginError');
     
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            try {
-                if (loginError) {
-                    loginError.style.display = 'none';
-                }
-                
-                console.log('🔐 Attempting login...');
-                
-                // Attempt login
-                await signIn(email, password);
-                
-                console.log('✅ Login successful!');
-                
-                // Success - reinitialize app to show dashboard
-                await initializeApp();
-                
-            } catch (error) {
-                // Show error message
-                console.error('❌ Login error:', error);
-                if (loginError) {
-                    loginError.textContent = error.message || 'Login failed. Please check your email and password.';
-                    loginError.style.display = 'block';
-                }
-            }
-        });
+    if (!loginForm) {
+        console.error('❌ Login form element not found!');
+        return;
     }
+    
+    console.log('✅ Login form found, attaching submit handler');
+    
+    // Remove any existing listeners
+    const newForm = loginForm.cloneNode(true);
+    loginForm.parentNode.replaceChild(newForm, loginForm);
+    
+    // Attach fresh listener
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        console.log('📝 Login form submitted');
+        
+        const emailInput = document.getElementById('loginEmail');
+        const passwordInput = document.getElementById('loginPassword');
+        
+        if (!emailInput || !passwordInput) {
+            console.error('❌ Email or password input not found');
+            return;
+        }
+        
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        
+        // Validate inputs
+        if (!email || !password) {
+            console.warn('⚠️ Email or password is empty');
+            if (loginError) {
+                loginError.textContent = 'Please enter both email and password.';
+                loginError.style.display = 'block';
+            }
+            return;
+        }
+        
+        try {
+            // Clear previous errors
+            if (loginError) {
+                loginError.style.display = 'none';
+                loginError.textContent = '';
+            }
+            
+            console.log('🔐 Attempting login with email:', email);
+            
+            // Show loading state
+            const submitBtn = document.querySelector('#loginForm button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Logging in...';
+            }
+            
+            // Attempt login
+            const result = await signIn(email, password);
+            
+            console.log('✅ Login successful!', result);
+            
+            // Show success notification
+            showNotification('✅ Login successful! Loading dashboard...');
+            
+            // Wait a moment then reinitialize app to show dashboard
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await initializeApp();
+            
+        } catch (error) {
+            console.error('❌ Login error:', error.message);
+            
+            // Re-enable submit button
+            const submitBtn = document.querySelector('#loginForm button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Log In';
+            }
+            
+            // Show error message
+            if (loginError) {
+                loginError.textContent = error.message || 'Login failed. Please check your email and password.';
+                loginError.style.display = 'block';
+            }
+            
+            showNotification('❌ Login failed: ' + (error.message || 'Unknown error'));
+        }
+    });
+    
+    console.log('✅ Login handlers setup complete');
 }
 
 /**
@@ -97,7 +167,7 @@ function setupLogoutButton() {
                 await initializeApp();
             } catch (error) {
                 console.error('❌ Logout failed:', error);
-                alert('Logout failed: ' + error.message);
+                showNotification('Logout failed: ' + error.message);
             }
         });
     }
@@ -133,6 +203,7 @@ function setupMainDashboardButtons() {
     if (startQuizBtn) {
         startQuizBtn.addEventListener('click', async function() {
             try {
+                console.log('📖 Loading quizzes...');
                 await initStartQuiz();
                 showSection('startQuizSection');
             } catch (error) {
@@ -283,130 +354,6 @@ function setupMainDashboardButtons() {
     }
 }
 
-// ===== CREATE QUIZ SECTION BUTTONS =====
-
-/**
- * Setup create quiz section buttons
- */
-function setupCreateQuizButtons() {
-    // Back from Create
-    const backFromCreateBtn = document.getElementById('backFromCreateBtn');
-    if (backFromCreateBtn) {
-        backFromCreateBtn.addEventListener('click', function() {
-            showSection('mainDashboard');
-        });
-    }
-    
-    // Add Question
-    const addQuestionBtn = document.getElementById('addQuestionBtn');
-    if (addQuestionBtn) {
-        addQuestionBtn.addEventListener('click', function() {
-            if (typeof addQuestion === 'function') {
-                addQuestion();
-            }
-        });
-    }
-    
-    // Save Quiz
-    const saveQuizBtn = document.getElementById('saveQuizBtn');
-    if (saveQuizBtn) {
-        saveQuizBtn.addEventListener('click', async function() {
-            try {
-                if (typeof saveQuiz === 'function') {
-                    await saveQuiz();
-                } else {
-                    showNotification('Save function not found');
-                }
-            } catch (error) {
-                console.error('Error saving quiz:', error);
-                showNotification('Error saving quiz: ' + error.message);
-            }
-        });
-    }
-}
-
-// ===== EDIT QUIZ SECTION BUTTONS =====
-
-/**
- * Setup edit quiz section buttons
- */
-function setupEditQuizButtons() {
-    // Back from Edit
-    const backFromEditBtn = document.getElementById('backFromEditBtn');
-    if (backFromEditBtn) {
-        backFromEditBtn.addEventListener('click', function() {
-            showSection('mainDashboard');
-        });
-    }
-    
-    // Back from Quiz Editor
-    const backFromQuizEditorBtn = document.getElementById('backFromQuizEditorBtn');
-    if (backFromQuizEditorBtn) {
-        backFromQuizEditorBtn.addEventListener('click', function() {
-            location.reload();
-        });
-    }
-}
-
-// ===== START QUIZ SECTION BUTTONS =====
-
-/**
- * Setup start quiz section buttons
- */
-function setupStartQuizButtons() {
-    // Back from Start
-    const backFromStartBtn = document.getElementById('backFromStartBtn');
-    if (backFromStartBtn) {
-        backFromStartBtn.addEventListener('click', function() {
-            showSection('mainDashboard');
-        });
-    }
-    
-    // Back from Quiz
-    const backFromQuizBtn = document.getElementById('backFromQuizBtn');
-    if (backFromQuizBtn) {
-        backFromQuizBtn.addEventListener('click', async function() {
-            try {
-                await initStartQuiz();
-                showSection('startQuizSection');
-            } catch (error) {
-                console.error('Error reloading quizzes:', error);
-                showNotification('Error loading quizzes: ' + error.message);
-            }
-        });
-    }
-}
-
-// ===== RESULTS SECTION BUTTONS =====
-
-/**
- * Setup results section buttons
- */
-function setupResultsButtons() {
-    // Back from Results
-    const backFromResultsBtn = document.getElementById('backFromResultsBtn');
-    if (backFromResultsBtn) {
-        backFromResultsBtn.addEventListener('click', function() {
-            showSection('mainDashboard');
-        });
-    }
-}
-
-// ===== PRINT SECTION BUTTONS =====
-
-/**
- * Setup print section buttons
- */
-function setupPrintButtons() {
-    // Back from Print
-    const backFromPrintBtn = document.getElementById('backFromPrintBtn');
-    if (backFromPrintBtn) {
-        backFromPrintBtn.addEventListener('click', function() {
-            showSection('mainDashboard');
-        });
-    }
-}
-
 // ===== UTILITY FUNCTIONS =====
 
 /**
@@ -414,6 +361,8 @@ function setupPrintButtons() {
  * @param {string} sectionId - ID of section to show
  */
 export function showSection(sectionId) {
+    console.log('👁️ Showing section:', sectionId);
+    
     // Hide all sections
     const sections = document.querySelectorAll('[id*="Section"], [id*="Dashboard"], [id*="Page"]');
     sections.forEach(section => {
@@ -424,6 +373,8 @@ export function showSection(sectionId) {
     const section = document.getElementById(sectionId);
     if (section) {
         section.style.display = 'block';
+    } else {
+        console.warn('⚠️ Section not found:', sectionId);
     }
 }
 
@@ -436,12 +387,14 @@ export function showNotification(message) {
     if (notification) {
         notification.textContent = message;
         notification.style.display = 'block';
+        notification.classList.add('show');
         
         setTimeout(() => {
             notification.style.display = 'none';
+            notification.classList.remove('show');
         }, 3000);
     } else {
-        console.log('Notification:', message);
+        console.log('📢 Notification:', message);
     }
 }
 
@@ -451,7 +404,9 @@ export function showNotification(message) {
 function applyThemeSettings() {
     // This can be expanded to load user's theme preference from database
     const body = document.body;
-    body.classList.add('light-theme'); // Default theme
+    if (!body.classList.contains('dark-theme')) {
+        body.classList.add('light-theme');
+    }
 }
 
 // ===== SECURITY: PREVENT INSPECTION =====
@@ -504,13 +459,19 @@ document.addEventListener('keydown', (e) => {
 
 window.showSection = showSection;
 window.showNotification = showNotification;
-
-// ===== BIND FUNCTIONS TO WINDOW FOR INLINE HANDLER ACCESSIBILITY =====
-window.showSection = showSection;
-window.showNotification = showNotification;
 window.getCurrentUser = getCurrentUser;
 window.signIn = signIn;
 window.signOut = signOut;
+window.initializeApp = initializeApp;
+
+// Debug helpers
+window.appDebug = {
+    showSection,
+    showNotification,
+    initializeApp
+};
+
+console.log('✅ App module loaded');
 
 // ===== START APP =====
 
@@ -519,14 +480,17 @@ window.signOut = signOut;
  */
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 QuizCall v4.0 starting...');
+    console.log('📋 DOM Content Loaded - beginning initialization');
     
-    // Setup all button handlers
-    setupCreateQuizButtons();
-    setupEditQuizButtons();
-    setupStartQuizButtons();
-    setupResultsButtons();
-    setupPrintButtons();
-    
-    // Check authentication and initialize
-    await initializeApp();
+    try {
+        // Wait a tiny moment to ensure all modules are loaded
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Check authentication and initialize
+        await initializeApp();
+        
+        console.log('✅ App initialization complete');
+    } catch (error) {
+        console.error('❌ Fatal error during app initialization:', error);
+    }
 });
