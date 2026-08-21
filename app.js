@@ -89,6 +89,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Export Quizzes Button
+    const exportQuizzesBtn = document.getElementById('exportQuizzesBtn');
+    if (exportQuizzesBtn) {
+        exportQuizzesBtn.addEventListener('click', function() {
+            exportAllData();
+        });
+    }
+    
+    // Import Quizzes Button
+    const importQuizzesBtn = document.getElementById('importQuizzesBtn');
+    if (importQuizzesBtn) {
+        importQuizzesBtn.addEventListener('click', function() {
+            document.getElementById('importFileInput').click();
+        });
+    }
+    
+    // Import File Input Handler
+    const importFileInput = document.getElementById('importFileInput');
+    if (importFileInput) {
+        importFileInput.addEventListener('change', function(e) {
+            handleImportFile(e.target.files[0]);
+            // Reset input so same file can be selected again
+            e.target.value = '';
+        });
+    }
+    
     // Back from Create
     const backFromCreateBtn = document.getElementById('backFromCreateBtn');
     if (backFromCreateBtn) {

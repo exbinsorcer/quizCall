@@ -1746,3 +1746,47 @@ body.dark-theme .question-limit-select:focus {
     border-color: #60a5fa;
     box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
 }
+
+/* ===== IMPORT DIALOG STYLES ===== */
+.import-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.import-dialog {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-theme .import-dialog {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+.import-dialog h2 {
+    margin: 0 0 16px 0;
+    font-size: 20px;
+}
+
+.import-dialog p {
+    margin: 8px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.import-dialog button {
+    width: 100%;
+    margin-top: 12px;
+}

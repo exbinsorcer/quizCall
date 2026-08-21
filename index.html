@@ -117,6 +117,19 @@
             <button class="primary-button" id="mixedPracticeBtn">
                 🎲 Mixed Practice
             </button>
+
+            <!-- Button to export all quizzes -->
+            <button class="secondary-button" id="exportQuizzesBtn">
+                📥 Export Quizzes
+            </button>
+
+            <!-- Button to import quizzes -->
+            <button class="secondary-button" id="importQuizzesBtn">
+                📤 Import Quizzes
+            </button>
+
+            <!-- Hidden file input for import -->
+            <input type="file" id="importFileInput" accept=".json" style="display: none;" />
         </div>
     </div>
     
@@ -456,6 +469,7 @@
 
     <!-- Quiz functionality scripts -->
     <script src="storage.js"></script>
+    <script src="sync.js"></script>
     <script src="reviewStorage.js"></script>
     <script src="ui.js"></script>
     <script src="createQuiz.js"></script>
