@@ -505,6 +505,13 @@ document.addEventListener('keydown', (e) => {
 window.showSection = showSection;
 window.showNotification = showNotification;
 
+// ===== BIND FUNCTIONS TO WINDOW FOR INLINE HANDLER ACCESSIBILITY =====
+window.showSection = showSection;
+window.showNotification = showNotification;
+window.getCurrentUser = getCurrentUser;
+window.signIn = signIn;
+window.signOut = signOut;
+
 // ===== START APP =====
 
 /**
