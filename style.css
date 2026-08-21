@@ -921,16 +921,21 @@ body.dark-theme .timer-display {
 }
 
 .quiz-question-card {
-    padding: 35px;
+    padding: 30px;
     background: white;
-    border-radius: 18px;
+    border-radius: 16px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
     position: relative;
+    min-height: 150px;
+    color: #1f2937;
 }
 
 .quiz-question {
     margin-top: 0;
-    line-height: 1.4;
+    margin-bottom: 16px;
+    font-size: 18px;
+    color: #1f2937;
+    line-height: 1.5;
 }
 
 .quiz-options {
@@ -943,6 +948,8 @@ body.dark-theme .timer-display {
     align-items: center;
     gap: 12px;
     padding: 15px;
+    font-size: 15px;
+    color: #1f2937;
     border: 2px solid #d1d5db;
     border-radius: 10px;
     cursor: pointer;
@@ -953,13 +960,18 @@ body.dark-theme .timer-display {
     background-color: #f0f4ff;
 }
 
-.quiz-option input[type="radio"] {
+.quiz-option input[type="radio"],
+.quiz-option input[type="checkbox"] {
     cursor: pointer;
+    width: 18px;
+    height: 18px;
 }
 
 .fill-answer {
     width: 100%;
     padding: 14px;
+    font-size: 15px;
+    color: #1f2937;
     border: 2px solid #d1d5db;
     border-radius: 10px;
 }
@@ -1307,6 +1319,7 @@ body.dark-theme .quiz-library-card {
 
 body.dark-theme .quiz-question-card {
     background: #374151;
+    color: #f3f4f6;
 }
 
 body.dark-theme .result-area {
@@ -1328,6 +1341,7 @@ body.dark-theme .quiz-review-answer-item {
 
 body.dark-theme .quiz-option {
     background: #4b5563;
+    color: #f4f6f8;
     border-color: #6b7280;
 }
 
