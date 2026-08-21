@@ -13,8 +13,8 @@ let timerInterval = null;
 let isReviewDueMode = false;
 
 function getCurrentQuiz() {
-    // Check if it's a mixed session
-    if (currentTakingQuizId && currentTakingQuizId.startsWith('mixed-')) {
+    // Check if it's a mixed session (convert to string for startsWith check)
+    if (currentTakingQuizId && String(currentTakingQuizId).startsWith('mixed-')) {
         return getMixedQuizData();
     }
     
@@ -375,7 +375,12 @@ function updateNavigationButtons(quiz) {
     const nextBtn = document.getElementById('nextQuestionBtn');
     const finishBtn = document.getElementById('finishQuizBtn');
     
-    prevBtn.disabled = currentQuestionIndex === 0;
+    // Hide/show previous button (hide on first question)
+    if (currentQuestionIndex === 0) {
+        prevBtn.style.display = 'none';
+    } else {
+        prevBtn.style.display = 'inline-block';
+    }
     
     if (currentQuestionIndex === quiz.questions.length - 1) {
         nextBtn.style.display = 'none';

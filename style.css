@@ -938,6 +938,15 @@ body.dark-theme .timer-display {
     line-height: 1.5;
 }
 
+h2.quiz-question {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 18px;
+    color: #1f2937;
+    line-height: 1.5;
+    font-weight: 600;
+}
+
 .quiz-options {
     display: grid;
     gap: 12px;
@@ -1144,6 +1153,13 @@ body.dark-theme .timer-display {
         font-size: 16px;
         margin-bottom: 16px;
         line-height: 1.5;
+    }
+
+    h2.quiz-question {
+        font-size: 16px;
+        margin-bottom: 16px;
+        line-height: 1.5;
+        font-weight: 600;
     }
 
     .quiz-options {
