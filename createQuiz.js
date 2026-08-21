@@ -93,9 +93,6 @@ function renderQuestionCard(questionObject) {
         <label>Question</label>
         <textarea id="questionText-${questionObject.id}" class="question-input" placeholder="Enter your question here">${questionObject.question}</textarea>
 
-        <label style="display: block; margin-top: 15px;">💡 Hint (Optional)</label>
-        <textarea id="questionHint-${questionObject.id}" class="hint-input" placeholder="Enter a helpful hint for this question">${questionObject.hint}</textarea>
-        
         <div class="answer-section">
             <div class="type-row">
                 <label>Answer Type:</label>
@@ -107,6 +104,9 @@ function renderQuestionCard(questionObject) {
             </div>
             <div id="answersList-${questionObject.id}"></div>
         </div>
+        
+        <label style="display: block; margin-top: 15px;">💡 Hint (Optional)</label>
+        <textarea id="questionHint-${questionObject.id}" class="hint-input" placeholder="Enter a helpful hint for this question">${questionObject.hint}</textarea>
     `;
     
     container.appendChild(card);
