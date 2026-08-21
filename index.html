@@ -107,6 +107,16 @@
             <button class="primary-button" id="printQuizBtn">
                 🖨️ Print
             </button>
+
+            <!-- Button to start Review Due session -->
+            <button class="primary-button" id="reviewDueBtn">
+                🔄 Review Due
+            </button>
+
+            <!-- Button to start Mixed Practice session -->
+            <button class="primary-button" id="mixedPracticeBtn">
+                🎲 Mixed Practice
+            </button>
         </div>
     </div>
     
@@ -291,6 +301,54 @@
     </div>
 
     <!-- ============================================================
+         MIXED PRACTICE SELECTION PAGE
+         Page for selecting quizzes for mixed/interleaved practice
+         ============================================================ -->
+    <div class="page" id="mixedPracticeSelectionSection" style="display: none;">
+        
+        <!-- Back button to return to dashboard -->
+        <button class="secondary-button" id="backFromMixedSelectBtn" style="margin-bottom: 20px;">
+            ← Back
+        </button>
+        
+        <!-- Header with title -->
+        <div class="simple-header">
+            <h1>Mixed Practice</h1>
+            <p>Select quizzes to practice together</p>
+        </div>
+        
+        <!-- Quiz selection container -->
+        <div class="mixed-practice-container">
+            <!-- Quiz selection controls -->
+            <div class="quiz-selection-controls">
+                <button class="secondary-button" id="selectAllQuizzesBtn">Select All</button>
+                <button class="secondary-button" id="clearAllQuizzesBtn">Clear All</button>
+            </div>
+            
+            <!-- Quiz list with checkboxes -->
+            <div class="quiz-selection-list" id="quizSelectionList">
+                <!-- Quizzes with checkboxes will be added here -->
+            </div>
+            
+            <!-- Question limit selector -->
+            <div class="question-limit-container">
+                <label for="questionLimitSelect">Number of questions:</label>
+                <select id="questionLimitSelect" class="question-limit-select">
+                    <option value="10">10 questions</option>
+                    <option value="20">20 questions</option>
+                    <option value="30">30 questions</option>
+                    <option value="all">All available</option>
+                </select>
+            </div>
+            
+            <!-- Start Mixed Session Button -->
+            <button class="primary-button" id="startMixedSessionBtn" style="margin-top: 20px; width: 100%; max-width: 400px; display: block; margin-left: auto; margin-right: auto;" disabled>
+                🎲 Start Mixed Practice
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================
          PRINT QUIZ PAGE
          Page for selecting and printing quizzes
          ============================================================ -->
@@ -329,6 +387,10 @@
             <div>
                 <h1 id="quizTitle-display">Quiz Title</h1>
                 <p id="quizProgress">Question 1 of 10</p>
+            </div>
+            <div class="timer-container">
+                <button class="timer-toggle-btn" id="timerToggleBtn" title="Show/hide timer">⏱️</button>
+                <div class="timer-display" id="timerDisplay">0:00</div>
             </div>
         </div>
         
@@ -394,11 +456,13 @@
 
     <!-- Quiz functionality scripts -->
     <script src="storage.js"></script>
+    <script src="reviewStorage.js"></script>
     <script src="ui.js"></script>
     <script src="createQuiz.js"></script>
     <script src="editQuiz.js"></script>
     <script src="startQuiz.js"></script>
     <script src="printQuiz.js"></script>
+    <script src="mixedPractice.js"></script>
     <script src="app.js"></script>
 
     <!-- Main app scripts -->

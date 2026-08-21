@@ -7,6 +7,36 @@ let currentQuestionIndex = 0;
 let userAnswers = [];
 let hintShown = false;
 
+// Timer tracking
+let questionStartTime = null;
+let timerInterval = null;
+let isReviewDueMode = false;
+
+function getCurrentQuiz() {
+    // Check if it's a mixed session
+    if (currentTakingQuizId && currentTakingQuizId.startsWith('mixed-')) {
+        return getMixedQuizData();
+    }
+    
+    // Otherwise get regular quiz
+    return getQuizById(currentTakingQuizId);
+}
+
+function startReviewDueSession() {
+    const dueQuizzes = getDueQuizzesForReview();
+    
+    if (dueQuizzes.length === 0) {
+        showNotification('✅ No questions to review! You\'re all caught up!');
+        return;
+    }
+    
+    // Start with the first due quiz
+    const quiz = dueQuizzes[0];
+    isReviewDueMode = true;
+    
+    startTakingQuiz(quiz.id);
+}
+
 function loadQuizzes() {
     const quizzes = getAllQuizzes();
     const quizzesList = document.getElementById('quizzesList');
@@ -139,7 +169,7 @@ function startTakingQuiz(quizId) {
 }
 
 function displayQuestion() {
-    const quiz = getQuizById(currentTakingQuizId);
+    const quiz = getCurrentQuiz();
     if (!quiz) return;
     
     const currentQuestion = quiz.questions[currentQuestionIndex];
@@ -158,6 +188,17 @@ function displayQuestion() {
     questionText.className = 'quiz-question';
     questionText.textContent = currentQuestion.question;
     questionDisplay.appendChild(questionText);
+    
+    // Show source quiz name for mixed practice
+    if (quiz.isMixedSession && currentQuestion.sourceQuiz) {
+        const sourceLabel = document.createElement('p');
+        sourceLabel.style.fontSize = '14px';
+        sourceLabel.style.color = '#6b7280';
+        sourceLabel.style.marginTop = '8px';
+        sourceLabel.style.fontStyle = 'italic';
+        sourceLabel.textContent = `📚 From: ${currentQuestion.sourceQuiz}`;
+        questionDisplay.appendChild(sourceLabel);
+    }
     
     if (currentQuestion.hint) {
         const hintContainer = document.createElement('div');
@@ -185,6 +226,7 @@ function displayQuestion() {
     }
     
     updateNavigationButtons(quiz);
+    startQuestionTimer();
 }
 
 function toggleHint(hintText, button) {
@@ -352,8 +394,13 @@ function goToPreviousQuestion() {
 }
 
 function goToNextQuestion() {
-    const quiz = getQuizById(currentTakingQuizId);
+    const quiz = getCurrentQuiz();
     if (!quiz) return;
+    
+    // Record answer time for current question if answered
+    if (userAnswers[currentQuestionIndex] !== null) {
+        recordAnswerTime(quiz.questions[currentQuestionIndex]);
+    }
     
     if (currentQuestionIndex < quiz.questions.length - 1) {
         currentQuestionIndex++;
@@ -361,9 +408,101 @@ function goToNextQuestion() {
     }
 }
 
+function startQuestionTimer() {
+    // Clear any existing timer
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+    
+    questionStartTime = Date.now();
+    
+    // Set up timer display toggle button
+    const timerToggleBtn = document.getElementById('timerToggleBtn');
+    if (timerToggleBtn && !timerToggleBtn.onclick) {
+        timerToggleBtn.onclick = toggleTimerDisplay;
+    }
+    
+    // Initialize timer display
+    const timerDisplay = document.getElementById('timerDisplay');
+    if (timerDisplay) {
+        timerDisplay.textContent = '0:00';
+        // Check if timer should be visible by default
+        if (getTimerVisibility()) {
+            timerDisplay.classList.add('visible');
+        }
+    }
+    
+    // Start timer update interval (update every 100ms)
+    timerInterval = setInterval(updateTimerDisplay, 100);
+}
+
+function updateTimerDisplay() {
+    if (!questionStartTime) return;
+    
+    const elapsed = Math.floor((Date.now() - questionStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    
+    const timerDisplay = document.getElementById('timerDisplay');
+    if (timerDisplay && timerDisplay.classList.contains('visible')) {
+        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+}
+
+function toggleTimerDisplay() {
+    const timerDisplay = document.getElementById('timerDisplay');
+    if (timerDisplay) {
+        timerDisplay.classList.toggle('visible');
+        const isNowVisible = timerDisplay.classList.contains('visible');
+        setTimerVisibility(isNowVisible);
+    }
+}
+
+function stopQuestionTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    
+    return questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
+}
+
+function recordAnswerTime(question) {
+    const secondsTaken = stopQuestionTimer();
+    
+    // Initialize review data for this question if needed
+    initQuestionReview(question.id);
+    
+    // Determine if answer was correct
+    const userAnswer = userAnswers[currentQuestionIndex];
+    let wasCorrect = false;
+    
+    if (userAnswer !== null && userAnswer !== undefined) {
+        if (question.answerType === 'multiple-choice' || question.answerType === 'true-false') {
+            const correctIndex = question.answers.findIndex(ans => ans.isCorrect);
+            wasCorrect = userAnswer === correctIndex;
+        } else if (question.answerType === 'fill-blank') {
+            const correctAnswers = question.answers
+                .filter(ans => ans.isCorrect)
+                .map(ans => ans.text.toLowerCase().trim());
+            
+            const userAnswerLower = userAnswer.toLowerCase().trim();
+            wasCorrect = correctAnswers.includes(userAnswerLower);
+        }
+    }
+    
+    // Update review data
+    updateQuestionReview(question.id, wasCorrect, secondsTaken);
+}
+
 function finishQuiz() {
-    const quiz = getQuizById(currentTakingQuizId);
+    const quiz = getCurrentQuiz();
     if (!quiz) return;
+    
+    // Record answer time for the last question
+    if (userAnswers[currentQuestionIndex] !== null) {
+        recordAnswerTime(quiz.questions[currentQuestionIndex]);
+    }
     
     let correctCount = 0;
     

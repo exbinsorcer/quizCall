@@ -39,6 +39,56 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Review Due Button
+    const reviewDueBtn = document.getElementById('reviewDueBtn');
+    if (reviewDueBtn) {
+        reviewDueBtn.addEventListener('click', function() {
+            startReviewDueSession();
+        });
+    }
+    
+    // Mixed Practice Button
+    const mixedPracticeBtn = document.getElementById('mixedPracticeBtn');
+    if (mixedPracticeBtn) {
+        mixedPracticeBtn.addEventListener('click', function() {
+            loadQuizzesForMixedPractice();
+            showSection('mixedPracticeSelectionSection');
+        });
+    }
+    
+    // Back from Mixed Practice Selection
+    const backFromMixedSelectBtn = document.getElementById('backFromMixedSelectBtn');
+    if (backFromMixedSelectBtn) {
+        backFromMixedSelectBtn.addEventListener('click', function() {
+            selectedQuizzes.clear();
+            showSection('quizDashboard');
+        });
+    }
+    
+    // Select All Quizzes
+    const selectAllQuizzesBtn = document.getElementById('selectAllQuizzesBtn');
+    if (selectAllQuizzesBtn) {
+        selectAllQuizzesBtn.addEventListener('click', function() {
+            selectAllQuizzes();
+        });
+    }
+    
+    // Clear All Quizzes
+    const clearAllQuizzesBtn = document.getElementById('clearAllQuizzesBtn');
+    if (clearAllQuizzesBtn) {
+        clearAllQuizzesBtn.addEventListener('click', function() {
+            clearAllQuizzes();
+        });
+    }
+    
+    // Start Mixed Session
+    const startMixedSessionBtn = document.getElementById('startMixedSessionBtn');
+    if (startMixedSessionBtn) {
+        startMixedSessionBtn.addEventListener('click', function() {
+            startMixedSession();
+        });
+    }
+    
     // Back from Create
     const backFromCreateBtn = document.getElementById('backFromCreateBtn');
     if (backFromCreateBtn) {
@@ -114,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentTakingQuizId = null;
             currentQuestionIndex = 0;
             userAnswers = [];
+            window.currentMixedQuiz = null;
             loadQuizzes();
             showSection('startQuizSection');
         });
@@ -158,7 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
             currentTakingQuizId = null;
             currentQuestionIndex = 0;
             userAnswers = [];
-            showSection('mainDashboard');
+            window.currentMixedQuiz = null;
+            showSection('quizDashboard');
         });
     }
 
